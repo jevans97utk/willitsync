@@ -1,0 +1,123 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: you@your-company.com
+  description: This is a simple API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Simple Inventory API
+  version: 1.0.0
+servers:
+- description: SwaggerHub API Auto Mocking
+  url: https://virtserver.swaggerhub.com/datadavev/willitsync/1.0.0
+tags:
+- description: Operations available to regular developers
+  name: developers
+paths:
+  /robots:
+    get:
+      description: |
+        By passing in the appropriate options, you can search for
+        available inventory in the system
+      operationId: parse_robots
+      parameters:
+      - description: URL pointing to a robots.txt file
+        explode: true
+        in: query
+        name: url
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RobotsFile'
+                type: array
+          description: Parsed robots.txt file
+        400:
+          description: bad input parameter
+        404:
+          description: No robots.txt file found
+      summary: Parses robots.txt to find sitemap(s)
+      tags:
+      - developers
+      x-openapi-router-controller: openapi_server.controllers.developers_controller
+components:
+  schemas:
+    RobotsFile:
+      example:
+        log:
+        - msg: A debug message
+          level: 10
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        - msg: A debug message
+          level: 10
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        sitemaps:
+        - https://my.server.com/test/sitemap.xml
+        - https://my.server.com/test/sitemap.xml
+        evaluated_date: 2000-01-23T04:56:07.000+00:00
+        url: https://my.server.org/test
+      properties:
+        url:
+          description: The URL for the robots.txt file
+          example: https://my.server.org/test
+          format: url
+          type: string
+        log:
+          items:
+            $ref: '#/components/schemas/Log_inner'
+          type: array
+        evaluated_date:
+          description: "The time stamp for when the evaluation of robots.txt \nwas\
+            \ initiated.\n"
+          format: date-time
+          type: string
+        sitemaps:
+          description: |
+            A list of sitemap URLs retrieved from the robots.txt file
+          items:
+            example: https://my.server.com/test/sitemap.xml
+            format: url
+            type: string
+          type: array
+      required:
+      - evaluated_date
+      - log
+      - sitemaps
+      - url
+      type: object
+    Log:
+      items:
+        $ref: '#/components/schemas/Log_inner'
+      type: array
+    Log_inner:
+      example:
+        msg: A debug message
+        level: 10
+        timestamp: 2000-01-23T04:56:07.000+00:00
+      properties:
+        level:
+          description: |
+            Logging level for entry. DEBUG=10, INFO=20, WARNING=30,
+            ERROR=40, FATAL=50
+          example: 10
+          type: integer
+        timestamp:
+          description: Timestamp for log entry
+          format: date-time
+          type: string
+        msg:
+          description: The logged message.
+          example: A debug message
+          type: string
+      required:
+      - level
+      - msg
+      - timestamp
+      type: object
