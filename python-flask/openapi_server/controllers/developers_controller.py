@@ -27,5 +27,4 @@ def parse_robots(url):  # noqa: E501
 
     r = RobotsFile(url, sitemaps=parser.sitemaps, evaluated_date=date)
     j = [ r.to_dict() ]
-    data = json.dumps([j])
-    return data
+    return j

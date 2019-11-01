@@ -10,7 +10,7 @@ info:
   version: 1.0.0
 servers:
 - description: SwaggerHub API Auto Mocking
-  url: https://virtserver.swaggerhub.com/datadavev/willitsync/1.0.0
+  url: https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.0
 tags:
 - description: Operations available to regular developers
   name: developers
