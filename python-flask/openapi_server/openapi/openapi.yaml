@@ -1,16 +1,16 @@
 openapi: 3.0.0
 info:
   contact:
-    email: you@your-company.com
-  description: This is a simple API
+    email: jevans97@utk.edu
+  description: Sitemap Checker
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: Simple Inventory API
-  version: 1.0.1
+  version: 1.0.2
 servers:
 - description: SwaggerHub API Auto Mocking
-  url: https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.1
+  url: https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.2
 tags:
 - description: Operations available to regular developers
   name: developers

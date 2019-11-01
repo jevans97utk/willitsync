@@ -21,13 +21,13 @@ python3 -m openapi_server
 and open your browser to here:
 
 ```
-http://localhost:8080/jevans97utk/willitsync/1.0.1/ui/
+http://localhost:8080/jevans97utk/willitsync/1.0.2/ui/
 ```
 
 Your OpenAPI definition lives here:
 
 ```
-http://localhost:8080/jevans97utk/willitsync/1.0.1/openapi.json
+http://localhost:8080/jevans97utk/willitsync/1.0.2/openapi.json
 ```
 
 To launch the integration tests, use tox:

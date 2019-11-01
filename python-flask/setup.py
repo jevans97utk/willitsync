@@ -23,7 +23,7 @@ setup(
     name=NAME,
     version=VERSION,
     description="Simple Inventory API",
-    author_email="you@your-company.com",
+    author_email="jevans97@utk.edu",
     url="",
     keywords=["OpenAPI", "Simple Inventory API"],
     install_requires=REQUIRES,
@@ -33,7 +33,7 @@ setup(
     entry_points={
         'console_scripts': ['openapi_server=openapi_server.__main__:main']},
     long_description="""\
-    This is a simple API
+    Sitemap Checker
     """
 )
 
