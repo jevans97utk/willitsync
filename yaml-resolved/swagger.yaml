@@ -7,9 +7,9 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 1.0.0
+  version: 1.0.1
 servers:
-- url: https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.0
+- url: https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.1
   description: SwaggerHub API Auto Mocking
 tags:
 - name: developers
