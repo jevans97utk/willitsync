@@ -2,16 +2,11 @@
 
 # Workflow
 
-1. Update the YAML configuration in SwaggerHub.
-2. If a new API version has been created, then a new GitHub integration must be created.  Most of the details of creating the new integration is straightforward, but be sure to set the items below correctly.  Consult the documentation at https://app.swaggerhub.com/help/integrations/github-sync for details.  It might be best to create the new version as soon as you know you will be making any changes, because the act of saving a subsequent change in SwaggerHub automatically pushes the change to GitHub (until you create a new version).
-  * Sync Method:  Basic Sync
-  * Branch:  SWAGGERHUB
-  * Generated API Code:  YAML (Resolved)
-
-3. Push the integration to github using the web UI, this lands in SWAGGERHUB GitHub branch
-4. Locally into devel
-5. Cherry-pick the SWAGGERHUB commit corresponding to the code generation
-6. In another terminal window, cd into the openapi-generator folder and run the following to generate the code
+1. Update the YAML configuration in SwaggerHub.  Saving it will commit it to GitHub (SWAGGERHUB branch) if a GitHub integration has been created.
+2. Pull the SWAGGERHUB changes
+3. Branch locally into devel
+4. Cherry-pick the SWAGGERHUB commit corresponding to the code generation
+5. In another terminal window, cd into the openapi-generator folder and run the following to generate the code
 
 ```shell
 $ java -jar modules/openapi-generator-cli/target/openapi-generator-cli.jar generate \
@@ -20,8 +15,8 @@ $ java -jar modules/openapi-generator-cli/target/openapi-generator-cli.jar gener
 -o $HOME/git/willitsync/python-flask
 ```
 
-7. In the local willitsync terminal window, run `git status` to see what has changed.  Revert any files that you did not wish to change.
-8. Test
+6. In the local willitsync terminal window, run `git status` to see what has changed.  Revert any files that you did not wish to change.
+7. Test
 
 ```python
 >>> import requests
@@ -39,4 +34,8 @@ $ java -jar modules/openapi-generator-cli/target/openapi-generator-cli.jar gener
 
 ```
 
-9. Commit the changes on the devel branch (possibly squash the cherry-picked commit?)
+8. Commit the changes on the devel branch (possibly squash the cherry-picked commit?)
+9. When development work is done, the version number could be updated, but this necessitates creating a new GitHub integration.  Most of the details of creating the new integration is straightforward, but be sure to set the items below correctly.  Consult the documentation at https://app.swaggerhub.com/help/integrations/github-sync for details. 
+  * Sync Method:  Basic Sync
+  * Branch:  SWAGGERHUB
+  * Generated API Code:  YAML (Resolved)
