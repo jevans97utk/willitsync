@@ -9,7 +9,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.0
 servers:
-- url: https://virtserver.swaggerhub.com/datadavev/willitsync/1.0.0
+- url: https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.0
   description: SwaggerHub API Auto Mocking
 tags:
 - name: developers
