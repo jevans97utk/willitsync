@@ -18,12 +18,12 @@ class TestDevelopersController(BaseTestCase):
 
         Parses robots.txt to find sitemap(s)
         """
-        query_string = [('url', 'url_example')]
+        query_string = [('url', 'https://latimes.com/robots.txt')]
         headers = { 
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/datadavev/willitsync/1.0.0/robots',
+            '/jevans97utk/willitsync/1.0.2/robots',
             method='GET',
             headers=headers,
             query_string=query_string)
