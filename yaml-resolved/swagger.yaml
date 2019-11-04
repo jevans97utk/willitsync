@@ -1,72 +1,136 @@
 openapi: 3.0.0
 info:
-  title: Simple Inventory API
+  title: WillItSync
   description: Sitemap Checker
   contact:
     email: jevans97@utk.edu
   license:
     name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 1.0.2
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+  version: 1.1.0
 servers:
-- url: https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.2
-  description: SwaggerHub API Auto Mocking
+  - url: 'https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.2'
+    description: SwaggerHub API Auto Mocking
 tags:
-- name: developers
-  description: Operations available to regular developers
+  - name: developers
+    description: Operations available to regular developers
+  - name: users
+    description: Operation available to all users
 paths:
   /robots:
     get:
       tags:
-      - developers
+        - developers
+        - users
       summary: Parses robots.txt to find sitemap(s)
       description: |
-        By passing in the appropriate options, you can search for
-        available inventory in the system
+        Given a robots.txt file, parse, and retrieve referenced sitemap documents.
       operationId: parseRobots
       parameters:
-      - name: url
-        in: query
-        description: URL pointing to a robots.txt file
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: string
+        - name: url
+          in: query
+          description: URL pointing to a robots.txt file
+          required: true
+          schema:
+            type: string
+            format: url
       responses:
-        200:
+        '200':
           description: Parsed robots.txt file
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RobotsFile'
-        400:
+                $ref: '#/components/schemas/RobotsFile'
+        '400':
           description: bad input parameter
-        404:
+        '404':
           description: No robots.txt file found
+  /sitemap:
+    get:
+      summary: Parses sitemap.xml
+      tags:
+        - developers
+        - users
+      description: Parses a sitemap to retrieve entries.
+      operationId: parseSitemap
+      parameters:
+        - in: query
+          name: url
+          description: URL pointing to a sitemap xml document.
+          required: true
+          schema:
+            type: string
+            format: url
+        - in: query
+          name: maxlocs
+          description: |
+            Maximum number of sitemap locations to return (100)
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sitemap successfully retrieved and parsed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sitemap'
+        '400':
+          description: Bad input parameter
+        '404':
+          description: No sitemap document found at url
+  /so:
+    get:
+      summary: Extract schema.org metadata
+      tags:
+        - developers
+        - users
+      description: |
+        Parses landing page to extract schema.org metadata
+      operationId:
+        parseLangingpage
+      parameters:
+        - in: query
+          name: url
+          required: true
+          description: |
+            URL pointing to langing page to be parsed
+          schema:
+            type: string
+            format: url
+      responses:
+        '200':
+          description: Landing page successfully retrieved and parsed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
+        '400':
+          description: Bad input parameter
+        '404':
+          description: No landing page document found at url
 components:
   schemas:
     RobotsFile:
       required:
-      - evaluated_date
-      - log
-      - sitemaps
-      - url
+        - evaluated_date
+        - log
+        - sitemaps
+        - url
       type: object
       properties:
         url:
           type: string
           description: The URL for the robots.txt file
           format: url
-          example: https://my.server.org/test
+          example: 'https://my.server.org/test'
         log:
           $ref: '#/components/schemas/Log'
         evaluated_date:
           type: string
-          description: "The time stamp for when the evaluation of robots.txt \nwas\
-            \ initiated.\n"
+          description: |
+            The time stamp for when the evaluation of robots.txt
+            was initiated.
           format: date-time
         sitemaps:
           type: array
@@ -75,16 +139,89 @@ components:
           items:
             type: string
             format: url
-            example: https://my.server.com/test/sitemap.xml
+            example: 'https://my.server.com/test/sitemap.xml'
+    Sitemap:
+      required:
+        - sitemaps
+        - evaluated_date
+        - log
+        - urlset
+      properties:
+        sitemaps:
+          type: array
+          description: |
+            List of sitemap URLs that were examined. The zeroth item
+            is always the URL provided in the request.
+          items:
+            type: string
+            format: url
+            example: 'https://my.server.net/test/sitemap.xml'
+            description: |
+              URL for a sitemaps.xml file that was examined.
+        evaluated_date:
+          type: string
+          format: date-time
+          description: |
+            The timestamp for when the evaluation of sitemaps.xml
+            was initiated.
+        log:
+          $ref: '#/components/schemas/Log'
+        urlset:
+          type: array
+          description: |
+            A list of location entries retieved from the sitemap. Includes
+            locations obtained from referenced sitemaps, if any.
+          items:
+            type: object
+            description: |
+              A list of <loc> entries found in the sitemap.
+            properties:
+              url:
+                type: string
+                format: url
+                description: |
+                  The value of the url element of a loc entry in a sitemap.
+              lastmod:
+                type: string
+                format: date-time
+                description: |
+                  The value of the lastmod element of the loc entry.
+    SOMetadata:
+      required:
+        - url
+        - evaluated_date
+        - log
+        - metadata
+      properties:
+        url:
+          type: string
+          format: url
+          description: |
+            URL of the landing page that was parsed. If a redirection
+            occurs, then this is the final URL that was used to
+            retrieve the landing page.
+        evaluated_date:
+          type: string
+          format: date-time
+          description: |
+            The timestamp for when the evaluation the landing page
+            was initiated.
+        log:
+          $ref: '#/components/schemas/Log'
+        metadata:
+          type: object
+          description: |
+            The schema.org metadata that was retrieved form the
+            landing page
     Log:
       type: array
       items:
-        $ref: '#/components/schemas/Log_inner'
-    Log_inner:
+        $ref: '#/components/schemas/LogEntry'
+    LogEntry:
       required:
-      - level
-      - msg
-      - timestamp
+        - level
+        - msg
+        - timestamp
       type: object
       properties:
         level:
@@ -95,9 +232,11 @@ components:
           example: 10
         timestamp:
           type: string
-          description: Timestamp for log entry
           format: date-time
+          description: Timestamp for log entry
+          example: '2016-08-29T09:12:33.001Z'
         msg:
           type: string
           description: The logged message.
-          example: A debug message
+          example: 'A debug message'
+  
