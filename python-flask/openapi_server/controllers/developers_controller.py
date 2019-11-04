@@ -1,11 +1,11 @@
 import datetime as dt
 import io
 import json
-import urllib.robotparser
 
 import connexion
 import six
 import requests
+from reppy.robots import Robots
 import lxml.etree
 
 from openapi_server.models.robots_file import RobotsFile  # noqa: E501
@@ -65,11 +65,9 @@ def parse_robots(url):  # noqa: E501
     """
     date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
-    parser = urllib.robotparser.RobotFileParser()
-    parser.set_url(url)
-    parser.read()
+    robots = Robots.fetch(url)
 
-    r = RobotsFile(url, sitemaps=parser.sitemaps, evaluated_date=date)
+    r = RobotsFile(url, sitemaps=robots.sitemaps, evaluated_date=date)
     j = [ r.to_dict() ]
     return j
 
