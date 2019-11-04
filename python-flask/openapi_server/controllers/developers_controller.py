@@ -11,12 +11,12 @@ from openapi_server.models.sitemap import Sitemap  # noqa: E501
 from openapi_server import util
 
 
-def parse_langingpage(url):  # noqa: E501
+def parse_landingpage(url):  # noqa: E501
     """Extract schema.org metadata
 
     Parses landing page to extract schema.org metadata  # noqa: E501
 
-    :param url: URL pointing to langing page to be parsed 
+    :param url: URL pointing to landing page to be parsed 
     :type url: str
 
     :rtype: SOMetadata
