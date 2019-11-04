@@ -37,7 +37,7 @@ class TestUsersController(BaseTestCase):
 
         Parses robots.txt to find sitemap(s)
         """
-        query_string = [('url', 'url_example')]
+        query_string = [('url', 'https://latimes.com/robots.txt')]
         headers = { 
             'Accept': 'application/json',
         }

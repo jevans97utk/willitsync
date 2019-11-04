@@ -1,3 +1,7 @@
+import datetime as dt
+import json
+import urllib.robotparser
+
 import connexion
 import six
 
@@ -23,14 +27,22 @@ def parse_langingpage(url):  # noqa: E501
 def parse_robots(url):  # noqa: E501
     """Parses robots.txt to find sitemap(s)
 
-    Given a robots.txt file, parse, and retrieve referenced sitemap documents.  # noqa: E501
+    Given a robots.txt file, parse, and retrieve referenced sitemap documents.
 
     :param url: URL pointing to a robots.txt file
     :type url: str
 
     :rtype: RobotsFile
     """
-    return 'do some magic!'
+    date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+
+    parser = urllib.robotparser.RobotFileParser()
+    parser.set_url(url)
+    parser.read()
+
+    r = RobotsFile(url, sitemaps=parser.sitemaps, evaluated_date=date)
+    j = [ r.to_dict() ]
+    return j
 
 
 def parse_sitemap(url, maxlocs=None):  # noqa: E501
