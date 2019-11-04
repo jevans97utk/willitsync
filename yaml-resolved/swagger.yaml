@@ -94,7 +94,7 @@ paths:
           name: url
           required: true
           description: |
-            URL pointing to langing page to be parsed
+            URL pointing to landing page to be parsed
           schema:
             type: string
             format: url
