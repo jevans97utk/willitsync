@@ -20,7 +20,8 @@ class TestUsersController(BaseTestCase):
 
         Extract schema.org metadata
         """
-        query_string = [('url', 'url_example')]
+        url = 'https://www.archive.arm.gov/metadata/html/pghnoaaaosM1.b1.html'
+        query_string = [('url', url)]
         headers = { 
             'Accept': 'application/json',
         }

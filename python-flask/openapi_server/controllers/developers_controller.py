@@ -1,9 +1,12 @@
 import datetime as dt
+import io
 import json
 import urllib.robotparser
 
 import connexion
 import six
+import requests
+import lxml.etree
 
 from openapi_server.models.robots_file import RobotsFile  # noqa: E501
 from openapi_server.models.so_metadata import SOMetadata  # noqa: E501
@@ -11,7 +14,7 @@ from openapi_server.models.sitemap import Sitemap  # noqa: E501
 from openapi_server import util
 
 
-def parse_landingpage(url):  # noqa: E501
+def parse_langingpage(url):  # noqa: E501
     """Extract schema.org metadata
 
     Parses landing page to extract schema.org metadata  # noqa: E501
@@ -21,7 +24,33 @@ def parse_landingpage(url):  # noqa: E501
 
     :rtype: SOMetadata
     """
-    return 'do some magic!'
+    date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+
+    jsonld = extract_jsonld(url)
+
+    kwargs = {
+        'url': url,
+        'evaluated_date': date,
+        'log': None, 
+        'metadata': None,
+    }
+    so_obj = SOMetadata(**kwargs)
+    return so_obj.to_dict()
+
+
+def extract_jsonld(url):
+    r = requests.get(url)
+    doc = lxml.etree.HTML(r.text)
+    path = './/script[@type="application/ld+json"]'
+    scripts = doc.xpath(path)
+
+    jsonld = None
+    for script in scripts:
+        j = json.loads(script.text)
+        if '@type' in j and j['@type'] == 'Dataset':
+            jsonld = j
+
+    return jsonld
 
 
 def parse_robots(url):  # noqa: E501
