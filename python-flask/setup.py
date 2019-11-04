@@ -22,10 +22,10 @@ REQUIRES = [
 setup(
     name=NAME,
     version=VERSION,
-    description="Simple Inventory API",
+    description="WillItSync",
     author_email="jevans97@utk.edu",
     url="",
-    keywords=["OpenAPI", "Simple Inventory API"],
+    keywords=["OpenAPI", "WillItSync"],
     install_requires=REQUIRES,
     packages=find_packages(),
     package_data={'': ['openapi/openapi.yaml']},

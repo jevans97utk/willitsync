@@ -6,20 +6,21 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  title: Simple Inventory API
-  version: 1.0.2
+  title: WillItSync
+  version: 1.1.0
 servers:
 - description: SwaggerHub API Auto Mocking
   url: https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.2
 tags:
 - description: Operations available to regular developers
   name: developers
+- description: Operation available to all users
+  name: users
 paths:
   /robots:
     get:
       description: |
-        By passing in the appropriate options, you can search for
-        available inventory in the system
+        Given a robots.txt file, parse, and retrieve referenced sitemap documents.
       operationId: parse_robots
       parameters:
       - description: URL pointing to a robots.txt file
@@ -28,6 +29,7 @@ paths:
         name: url
         required: true
         schema:
+          format: url
           type: string
         style: form
       responses:
@@ -35,9 +37,7 @@ paths:
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/RobotsFile'
-                type: array
+                $ref: '#/components/schemas/RobotsFile'
           description: Parsed robots.txt file
         400:
           description: bad input parameter
@@ -46,6 +46,78 @@ paths:
       summary: Parses robots.txt to find sitemap(s)
       tags:
       - developers
+      - users
+      x-openapi-router-controller: openapi_server.controllers.developers_controller
+  /sitemap:
+    get:
+      description: Parses a sitemap to retrieve entries.
+      operationId: parse_sitemap
+      parameters:
+      - description: URL pointing to a sitemap xml document.
+        explode: true
+        in: query
+        name: url
+        required: true
+        schema:
+          format: url
+          type: string
+        style: form
+      - description: |
+          Maximum number of sitemap locations to return (100)
+        explode: true
+        in: query
+        name: maxlocs
+        required: false
+        schema:
+          type: integer
+        style: form
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sitemap'
+          description: Sitemap successfully retrieved and parsed
+        400:
+          description: Bad input parameter
+        404:
+          description: No sitemap document found at url
+      summary: Parses sitemap.xml
+      tags:
+      - developers
+      - users
+      x-openapi-router-controller: openapi_server.controllers.developers_controller
+  /so:
+    get:
+      description: |
+        Parses landing page to extract schema.org metadata
+      operationId: parse_langingpage
+      parameters:
+      - description: |
+          URL pointing to langing page to be parsed
+        explode: true
+        in: query
+        name: url
+        required: true
+        schema:
+          format: url
+          type: string
+        style: form
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
+          description: Landing page successfully retrieved and parsed
+        400:
+          description: Bad input parameter
+        404:
+          description: No landing page document found at url
+      summary: Extract schema.org metadata
+      tags:
+      - developers
+      - users
       x-openapi-router-controller: openapi_server.controllers.developers_controller
 components:
   schemas:
@@ -54,10 +126,10 @@ components:
         log:
         - msg: A debug message
           level: 10
-          timestamp: 2000-01-23T04:56:07.000+00:00
+          timestamp: 2016-08-29T09:12:33.001Z
         - msg: A debug message
           level: 10
-          timestamp: 2000-01-23T04:56:07.000+00:00
+          timestamp: 2016-08-29T09:12:33.001Z
         sitemaps:
         - https://my.server.com/test/sitemap.xml
         - https://my.server.com/test/sitemap.xml
@@ -71,11 +143,12 @@ components:
           type: string
         log:
           items:
-            $ref: '#/components/schemas/Log_inner'
+            $ref: '#/components/schemas/LogEntry'
           type: array
         evaluated_date:
-          description: "The time stamp for when the evaluation of robots.txt \nwas\
-            \ initiated.\n"
+          description: |
+            The time stamp for when the evaluation of robots.txt
+            was initiated.
           format: date-time
           type: string
         sitemaps:
@@ -92,15 +165,107 @@ components:
       - sitemaps
       - url
       type: object
+    Sitemap:
+      example:
+        urlset:
+        - url: http://example.com/aeiou
+          lastmod: 2000-01-23T04:56:07.000+00:00
+        - url: http://example.com/aeiou
+          lastmod: 2000-01-23T04:56:07.000+00:00
+        log:
+        - msg: A debug message
+          level: 10
+          timestamp: 2016-08-29T09:12:33.001Z
+        - msg: A debug message
+          level: 10
+          timestamp: 2016-08-29T09:12:33.001Z
+        sitemaps:
+        - https://my.server.net/test/sitemap.xml
+        - https://my.server.net/test/sitemap.xml
+        evaluated_date: 2000-01-23T04:56:07.000+00:00
+      properties:
+        sitemaps:
+          description: |
+            List of sitemap URLs that were examined. The zeroth item
+            is always the URL provided in the request.
+          items:
+            description: |
+              URL for a sitemaps.xml file that was examined.
+            example: https://my.server.net/test/sitemap.xml
+            format: url
+            type: string
+          type: array
+        evaluated_date:
+          description: |
+            The timestamp for when the evaluation of sitemaps.xml
+            was initiated.
+          format: date-time
+          type: string
+        log:
+          items:
+            $ref: '#/components/schemas/LogEntry'
+          type: array
+        urlset:
+          description: |
+            A list of location entries retieved from the sitemap. Includes
+            locations obtained from referenced sitemaps, if any.
+          items:
+            $ref: '#/components/schemas/Sitemap_urlset'
+          type: array
+      required:
+      - evaluated_date
+      - log
+      - sitemaps
+      - urlset
+    SOMetadata:
+      example:
+        metadata: '{}'
+        log:
+        - msg: A debug message
+          level: 10
+          timestamp: 2016-08-29T09:12:33.001Z
+        - msg: A debug message
+          level: 10
+          timestamp: 2016-08-29T09:12:33.001Z
+        evaluated_date: 2000-01-23T04:56:07.000+00:00
+        url: http://example.com/aeiou
+      properties:
+        url:
+          description: |
+            URL of the landing page that was parsed. If a redirection
+            occurs, then this is the final URL that was used to
+            retrieve the landing page.
+          format: url
+          type: string
+        evaluated_date:
+          description: |
+            The timestamp for when the evaluation the landing page
+            was initiated.
+          format: date-time
+          type: string
+        log:
+          items:
+            $ref: '#/components/schemas/LogEntry'
+          type: array
+        metadata:
+          description: |
+            The schema.org metadata that was retrieved form the
+            landing page
+          type: object
+      required:
+      - evaluated_date
+      - log
+      - metadata
+      - url
     Log:
       items:
-        $ref: '#/components/schemas/Log_inner'
+        $ref: '#/components/schemas/LogEntry'
       type: array
-    Log_inner:
+    LogEntry:
       example:
         msg: A debug message
         level: 10
-        timestamp: 2000-01-23T04:56:07.000+00:00
+        timestamp: 2016-08-29T09:12:33.001Z
       properties:
         level:
           description: |
@@ -110,6 +275,7 @@ components:
           type: integer
         timestamp:
           description: Timestamp for log entry
+          example: 2016-08-29T09:12:33.001Z
           format: date-time
           type: string
         msg:
@@ -121,3 +287,20 @@ components:
       - msg
       - timestamp
       type: object
+    Sitemap_urlset:
+      description: |
+        A list of <loc> entries found in the sitemap.
+      example:
+        url: http://example.com/aeiou
+        lastmod: 2000-01-23T04:56:07.000+00:00
+      properties:
+        url:
+          description: |
+            The value of the url element of a loc entry in a sitemap.
+          format: url
+          type: string
+        lastmod:
+          description: |
+            The value of the lastmod element of the loc entry.
+          format: date-time
+          type: string
