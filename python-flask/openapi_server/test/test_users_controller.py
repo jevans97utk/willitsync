@@ -33,6 +33,21 @@ class TestUsersController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+    def test_parse_robots_404(self):
+        """Test case for parse_robots when the robots file does not exist.
+        """
+        query_string = [('url', 'https://nytimes.com/robots2.txt')]
+        headers = { 
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/jevans97utk/willitsync/1.0.2/robots',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
+        self.assert404(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
     def test_parse_robots(self):
         """Test case for parse_robots
 

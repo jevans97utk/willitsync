@@ -2,6 +2,7 @@ import datetime as dt
 import json
 
 import connexion
+import requests
 import six
 from reppy.robots import Robots
 
@@ -36,11 +37,18 @@ def parse_robots(url):  # noqa: E501
     """
     date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
+    r = requests.get(url)
+    breakpoint()
+    if r.status_code == 400:
+        return 'Bad request', 400
+    elif r.status_code == 404:
+        return 'Document not found', 404
+
     robots = Robots.fetch(url)
 
     r = RobotsFile(url, sitemaps=robots.sitemaps, evaluated_date=date)
     j = [ r.to_dict() ]
-    return j
+    return j, 200
 
 
 def parse_sitemap(url, maxlocs=None):  # noqa: E501

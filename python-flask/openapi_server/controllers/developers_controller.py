@@ -26,31 +26,42 @@ def parse_langingpage(url):  # noqa: E501
     """
     date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
-    jsonld = extract_jsonld(url)
+    try:
+        jsonld, logs = extract_jsonld(url)
+    except Exception as e:
+        return None, 404
 
     kwargs = {
         'url': url,
         'evaluated_date': date,
-        'log': None, 
-        'metadata': None,
+        'log': logs, 
+        'metadata': jsonld,
     }
     so_obj = SOMetadata(**kwargs)
-    return so_obj.to_dict()
+    return so_obj.to_dict(), 200
 
 
 def extract_jsonld(url):
-    r = requests.get(url)
-    doc = lxml.etree.HTML(r.text)
-    path = './/script[@type="application/ld+json"]'
-    scripts = doc.xpath(path)
+    """
+    Given a URL of a landing page, extract an existing JSON-LD element if it
+    exists.
 
-    jsonld = None
-    for script in scripts:
-        j = json.loads(script.text)
-        if '@type' in j and j['@type'] == 'Dataset':
-            jsonld = j
+    Returns
+    -------
+    jsonld : object
+        deserialized JSON object
+    logs
+    """
+    from schema_org.so_core import SchemaDotOrgHarvester
+    import asyncio
+    obj = SchemaDotOrgHarvester(log_to_string=True, log_to_stdout=False)
+    doc = asyncio.run(obj.retrieve_landing_page_content(url))
+    jsonld = obj.extract_jsonld(doc)
+    obj.jsonld_validator.check(jsonld)
 
-    return jsonld
+    logs = obj.extract_log_messages()
+
+    return jsonld, logs
 
 
 def parse_robots(url):  # noqa: E501
@@ -64,6 +75,12 @@ def parse_robots(url):  # noqa: E501
     :rtype: RobotsFile
     """
     date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+
+    r = requests.get(url)
+    if r.status_code == 400:
+        return 'Bad request', 400
+    elif r.status_code == 404:
+        return 'Document not found', 404
 
     robots = Robots.fetch(url)
 

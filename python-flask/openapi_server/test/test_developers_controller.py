@@ -1,9 +1,11 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+import importlib.resources as ir
 import unittest
 
 from flask import json
+import requests_mock
 from six import BytesIO
 
 from openapi_server.models.robots_file import RobotsFile  # noqa: E501
@@ -18,7 +20,10 @@ class TestDevelopersController(BaseTestCase):
 
         Parses robots.txt to find sitemap(s)
         """
-        query_string = [('url', 'https://latimes.com/robots.txt')]
+        contents = [ir.read_text('openapi_server.test.data', 'nytimes_robots.txt')]
+        headers = [{'Content-type': 'text/plain; charset=UTF-8'}]
+
+        query_string = [('url', 'https://nytimes.com/robots.txt')]
         headers = { 
             'Accept': 'application/json',
         }
