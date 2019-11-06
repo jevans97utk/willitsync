@@ -5,7 +5,6 @@ import json
 import connexion
 import six
 import requests
-from reppy.robots import Robots
 import lxml.etree
 
 from openapi_server.models.robots_file import RobotsFile  # noqa: E501
@@ -82,9 +81,12 @@ def parse_robots(url):  # noqa: E501
     elif r.status_code == 404:
         return 'Document not found', 404
 
-    robots = Robots.fetch(url)
+    sitemaps = []
+    for line in r.text.splitlines():
+        if 'Sitemap:' in line:
+            sitemaps.append(line.split(': ')[0])
 
-    r = RobotsFile(url, sitemaps=robots.sitemaps, evaluated_date=date)
+    r = RobotsFile(url, sitemaps=sitemaps, evaluated_date=date)
     j = [ r.to_dict() ]
     return j
 

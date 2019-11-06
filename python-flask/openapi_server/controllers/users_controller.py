@@ -38,7 +38,6 @@ def parse_robots(url):  # noqa: E501
     date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
     r = requests.get(url)
-    breakpoint()
     if r.status_code == 400:
         return 'Bad request', 400
     elif r.status_code == 404:
