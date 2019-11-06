@@ -24,7 +24,23 @@ def parse_landing_page(url):  # noqa: E501
 
     :rtype: SOMetadata
     """
-    return 'do some magic!'
+    try:
+        date, jsonld, logs = bl.parse_landing_page(url)
+    except aiohttp.client_exceptions.ClientResponseError as e:
+        # If the URL doesn't exist
+        return e.message, e.status
+    except Exception as e:  # noqa:  F841
+        # Anything else, return a 400
+        return str(e), 400
+
+    kwargs = {
+        'url': url,
+        'evaluated_date': date,
+        'log': logs,
+        'metadata': jsonld,
+    }
+    so_obj = SOMetadata(**kwargs)
+    return so_obj.to_dict(), 200
 
 
 def parse_robots(url):  # noqa: E501

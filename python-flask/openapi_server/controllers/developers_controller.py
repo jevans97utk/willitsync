@@ -21,7 +21,14 @@ def parse_langingpage(url):  # noqa: E501
 
     :rtype: SOMetadata
     """
-    date, jsonld, logs = bl.parse_landing_page(url)
+    try:
+        date, jsonld, logs = bl.parse_landing_page(url)
+    except aiohttp.client_exceptions.ClientResponseError as e:
+        # If the URL doesn't exist
+        return e.message, e.status
+    except Exception as e:  # noqa:  F841
+        # Anything else, return a 400
+        return str(e), 400
 
     kwargs = {
         'url': url,

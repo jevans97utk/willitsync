@@ -30,12 +30,7 @@ def parse_robots(url):
 def parse_landing_page(url):
 
     date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-
-    try:
-        jsonld, logs = extract_jsonld(url)
-    except Exception as e:  # noqa:  F841
-        return None, 404
-
+    jsonld, logs = extract_jsonld(url)
     return date, jsonld, logs
 
 
