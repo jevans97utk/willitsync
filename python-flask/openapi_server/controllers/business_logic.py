@@ -52,7 +52,7 @@ def extract_jsonld(url):
     """
     obj = SchemaDotOrgHarvester(log_to_string=True, log_to_stdout=False)
     doc = asyncio.run(obj.retrieve_landing_page_content(url))
-    jsonld = obj.extract_jsonld(doc)
+    jsonld = obj.extract_jsonld_from_landing_page(doc)
     obj.jsonld_validator.check(jsonld)
 
     logs = obj.extract_log_messages()
