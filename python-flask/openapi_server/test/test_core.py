@@ -1,9 +1,12 @@
 # Standard library imports
+import collections
 from unittest.mock import patch
 
 # 3rd party library imports
 import requests
 from openapi_server.test import BaseTestCase
+
+Response = collections.namedtuple('Response', ['status_code', 'text'])
 
 
 class MockRequestsGet(object):
@@ -39,8 +42,11 @@ class MockRequestsGet(object):
         >>> r = requests.get(bad url)
         >>> r.raise_for_status()
         """
-        if self.status_code != 200:
-            raise requests.HTTPError('bad url')
+        if self.status_code == 200:
+            return
+        else:
+            response = Response(self.status_code, 'something went wrong')
+            raise requests.HTTPError(response=response)
 
 
 class WillItSyncTestCase(BaseTestCase):
@@ -48,6 +54,11 @@ class WillItSyncTestCase(BaseTestCase):
     Both the developers and users controller test cases use the same test
     setup and teardown code.
     """
+
+    def startUp(self):
+
+        if hasattr(self, 'requests_patcher'):
+            self.requests_patcher.stop()
 
     def tearDown(self):
 
@@ -60,7 +71,7 @@ class WillItSyncTestCase(BaseTestCase):
             MockRequestsGet(content=content, status_code=status_code)
         ]
 
-        patchee = 'openapi_server.controllers.users_controller.requests.get'
+        patchee = 'openapi_server.controllers.business_logic.requests.get'
         self.requests_patcher = patch(patchee, side_effect=side_effect)
 
         self.requests_patcher.start()

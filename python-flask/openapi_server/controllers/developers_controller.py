@@ -9,6 +9,7 @@ from openapi_server.models.so_metadata import SOMetadata  # noqa: E501
 from openapi_server.models.sitemap import Sitemap  # noqa: E501
 from openapi_server import util
 
+from . import business_logic as bl
 
 def parse_langingpage(url):  # noqa: E501
     """Extract schema.org metadata
@@ -70,23 +71,14 @@ def parse_robots(url):  # noqa: E501
 
     :rtype: RobotsFile
     """
-    date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-
-    r = requests.get(url)
-    if r.status_code == 400:
-        return 'Bad request', 400
-    elif r.status_code == 404:
-        return 'Document not found', 404
-
-    sitemaps = []
-    for line in r.text.splitlines():
-        if 'Sitemap:' in line:
-            sitemaps.append(line.split(': ')[0])
-
-    r = RobotsFile(url, sitemaps=sitemaps, evaluated_date=date)
-    j = [r.to_dict()]
-    return j
-
+    try:
+        date, sitemaps = bl.parse_robots(url)
+    except Exception as e:
+        return e.response.text, e.response.status_code
+    else:
+        r = RobotsFile(url, sitemaps=sitemaps, evaluated_date=date)
+        j = [r.to_dict()]
+        return j, 200
 
 def parse_sitemap(url, maxlocs=None):  # noqa: E501
     """Parses sitemap.xml
