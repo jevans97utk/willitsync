@@ -10,9 +10,10 @@ from six import BytesIO
 
 from openapi_server.models.robots_file import RobotsFile  # noqa: E501
 from openapi_server.test import BaseTestCase
+from .test_core import MockRequestsGet, WillItSyncTestCase
 
 
-class TestDevelopersController(BaseTestCase):
+class TestDevelopersController(WillItSyncTestCase):
     """DevelopersController integration test stubs"""
 
     def test_parse_robots(self):
@@ -20,11 +21,11 @@ class TestDevelopersController(BaseTestCase):
 
         Parses robots.txt to find sitemap(s)
         """
-        contents = [ir.read_text('openapi_server.test.data', 'nytimes_robots.txt')]
-        headers = [{'Content-type': 'text/plain; charset=UTF-8'}]
+        data = ir.read_binary('openapi_server.test.data', 'robots_nytimes.txt')
+        self.setup_requests_patcher(200, data)
 
         query_string = [('url', 'https://nytimes.com/robots.txt')]
-        headers = { 
+        headers = {
             'Accept': 'application/json',
         }
         response = self.client.open(

@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 import importlib.resources as ir
 import unittest
-from unittest.mock import patch
 
 from flask import json
 from six import BytesIO
@@ -12,63 +11,11 @@ from openapi_server.models.robots_file import RobotsFile  # noqa: E501
 from openapi_server.models.so_metadata import SOMetadata  # noqa: E501
 from openapi_server.models.sitemap import Sitemap  # noqa: E501
 from openapi_server.test import BaseTestCase
+from .test_core import MockRequestsGet, WillItSyncTestCase
 
 
-class MockRequestsGet(object):
-    """
-    Mock out the actions of the response of a requests.get operation.
-
-    Attributes
-    ----------
-    content, text, status_code
-        These correspond to the same items in a requests.Response object
-    """
-    def __init__(self, content=None, status_code=200):
-        """
-        Parameters
-        ----------
-        content
-            binary sequence
-        """
-
-        self.content = content
-
-        try:
-            self.text = content.decode('utf-8')
-        except (AttributeError, UnicodeDecodeError):
-            self.text = ''
-
-        self.status_code = status_code
-
-    def raise_for_status(self):
-        """
-        Mock out the following sequence of events.
-
-        >>> r = requests.get(bad url)
-        >>> r.raise_for_status()
-        """
-        if self.status_code != 200:
-            raise requests.HTTPError('bad url')
-
-
-class TestUsersController(BaseTestCase):
+class TestUsersController(WillItSyncTestCase):
     """UsersController integration test stubs"""
-
-    def tearDown(self):
-
-        if hasattr(self, 'requests_patcher'):
-            self.requests_patcher.stop()
-
-    def setup_requests_patcher(self, status_code, content):
-
-        side_effect = [
-            MockRequestsGet(content=content, status_code=status_code)
-        ]
-
-        patchee = 'openapi_server.controllers.users_controller.requests.get'
-        self.requests_patcher = patch(patchee, side_effect=side_effect)
-
-        self.requests_patcher.start()
 
     def test_parse_langingpage(self):
         """Test case for parse_langingpage

@@ -1,11 +1,8 @@
 import datetime as dt
-import io
-import json
 
 import connexion
 import six
 import requests
-import lxml.etree
 
 from openapi_server.models.robots_file import RobotsFile  # noqa: E501
 from openapi_server.models.so_metadata import SOMetadata  # noqa: E501
@@ -18,7 +15,7 @@ def parse_langingpage(url):  # noqa: E501
 
     Parses landing page to extract schema.org metadata  # noqa: E501
 
-    :param url: URL pointing to landing page to be parsed 
+    :param url: URL pointing to landing page to be parsed
     :type url: str
 
     :rtype: SOMetadata
@@ -27,13 +24,13 @@ def parse_langingpage(url):  # noqa: E501
 
     try:
         jsonld, logs = extract_jsonld(url)
-    except Exception as e:
+    except Exception as e:  # noqa:  F841
         return None, 404
 
     kwargs = {
         'url': url,
         'evaluated_date': date,
-        'log': logs, 
+        'log': logs,
         'metadata': jsonld,
     }
     so_obj = SOMetadata(**kwargs)
@@ -87,7 +84,7 @@ def parse_robots(url):  # noqa: E501
             sitemaps.append(line.split(': ')[0])
 
     r = RobotsFile(url, sitemaps=sitemaps, evaluated_date=date)
-    j = [ r.to_dict() ]
+    j = [r.to_dict()]
     return j
 
 
@@ -98,7 +95,7 @@ def parse_sitemap(url, maxlocs=None):  # noqa: E501
 
     :param url: URL pointing to a sitemap xml document.
     :type url: str
-    :param maxlocs: Maximum number of sitemap locations to return (100) 
+    :param maxlocs: Maximum number of sitemap locations to return (100)
     :type maxlocs: int
 
     :rtype: Sitemap
