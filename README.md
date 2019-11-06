@@ -2,11 +2,19 @@
 
 # Workflow
 
-1. Update the YAML configuration in SwaggerHub.  Saving it will commit it to GitHub (SWAGGERHUB branch) if a GitHub integration has been created.
-2. Pull the SWAGGERHUB changes
-3. Branch locally into devel
-4. Cherry-pick the SWAGGERHUB commit corresponding to the code generation
-5. In another terminal window, cd into the openapi-generator folder and run the following to generate the code
+## SlenderNodes
+
+1. Grab the devel branch of jevans97 SlenderNodes
+2. cd /path/to/SlenderNodes/schema_org/src
+
+Create a Anaconda environment for python 3.7 like so
+
+3. conda env create -n willitsync37 --file=environment.yml
+4. conda activate willitsync37
+
+## OpenAPI
+
+1. If and only if there has been a change in the YAML configuration file, in another terminal window, cd into the openapi-generator folder and run the following to generate the code
 
 ```shell
 $ java -jar modules/openapi-generator-cli/target/openapi-generator-cli.jar generate \
@@ -15,27 +23,41 @@ $ java -jar modules/openapi-generator-cli/target/openapi-generator-cli.jar gener
 -o $HOME/git/willitsync/python-flask
 ```
 
-6. In the local willitsync terminal window, run `git status` to see what has changed.  Revert any files that you did not wish to change.
-7. Test
+2. In a willitsync environment terminal window, run `git status` to see what has changed.  Revert any files that you did not wish to change.  It's quite possibly that you will want to restore all files listed by `git status`.
+3. cd python-flask
+
+Install additional requirements to run the openapi server
+
+4. python -m pip install -r requirements.txt
+5. python -m pip install -r test-requirements.txt
+
+Run the server
+
+6. python -m openapi_server
+
+7. In another terminal window (does not have to be a willitsync environment terminal window), you can test with
 
 ```python
 >>> import requests
 
->>> url = 'http://localhost:8080/jevans97utk/willitsync/1.0.1/robots'
->>> params = {'url':  'https://latimes.com/robots.txt'}
+>>> url = 'http://localhost:8080/jevans97utk/willitsync/1.0.2/robots'
+>>> params = {'url':  'https://nytimes.com/robots.txt'}
 >>> r = requests.get(url, params=params)
 >>> r.json()
-[{'evaluated_date': '2019-11-01T08:36:02',
+[{'evaluated_date': '2019-11-05T15:43:10',
   'log': None,
-  'sitemaps': ['https://www.latimes.com/sitemap.xml',
-   'https://www.latimes.com/news-sitemap.xml'],
-  'url': 'https://latimes.com/robots.txt'}]
-
-
+  'sitemaps': ['https://www.nytimes.com/sitemaps/www.nytimes.com/sitemap.xml.gz',
+   'https://www.nytimes.com/sitemaps/new/news.xml.gz',
+   'https://www.nytimes.com/sitemaps/sitemap_video/sitemap.xml.gz',
+   'https://www.nytimes.com/sitemaps/www.nytimes.com_realestate/sitemap.xml.gz',
+   'https://www.nytimes.com/sitemaps/www.nytimes.com/2016_election_sitemap.xml.gz',
+   'https://www.nytimes.com/elections/2018/sitemap'],
+  'url': 'https://nytimes.com/robots.txt'}]
 ```
 
-8. Commit the changes on the devel branch (possibly squash the cherry-picked commit?)
-9. When development work is done, the version number could be updated, but this necessitates creating a new GitHub integration.  Most of the details of creating the new integration is straightforward, but be sure to set the items below correctly.  Consult the documentation at https://app.swaggerhub.com/help/integrations/github-sync for details. 
-  * Sync Method:  Basic Sync
-  * Branch:  SWAGGERHUB
-  * Generated API Code:  YAML (Resolved)
+```python
+>>> url = 'http://localhost:8080/jevans97utk/willitsync/1.0.2/so'
+>>> params = {'url': 'https://www.archive.arm.gov/metadata/html/pghnoaaaosM1.b1.html'}
+>>> r = requests.get(url, params=params) 
+>>> r.json()['metadata']
+```
