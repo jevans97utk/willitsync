@@ -21,12 +21,7 @@ def parse_langingpage(url):  # noqa: E501
 
     :rtype: SOMetadata
     """
-    date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-
-    try:
-        jsonld, logs = extract_jsonld(url)
-    except Exception as e:  # noqa:  F841
-        return None, 404
+    date, jsonld, logs = bl.parse_landing_page(url)
 
     kwargs = {
         'url': url,
@@ -36,29 +31,6 @@ def parse_langingpage(url):  # noqa: E501
     }
     so_obj = SOMetadata(**kwargs)
     return so_obj.to_dict(), 200
-
-
-def extract_jsonld(url):
-    """
-    Given a URL of a landing page, extract an existing JSON-LD element if it
-    exists.
-
-    Returns
-    -------
-    jsonld : object
-        deserialized JSON object
-    logs
-    """
-    from schema_org.so_core import SchemaDotOrgHarvester
-    import asyncio
-    obj = SchemaDotOrgHarvester(log_to_string=True, log_to_stdout=False)
-    doc = asyncio.run(obj.retrieve_landing_page_content(url))
-    jsonld = obj.extract_jsonld(doc)
-    obj.jsonld_validator.check(jsonld)
-
-    logs = obj.extract_log_messages()
-
-    return jsonld, logs
 
 
 def parse_robots(url):  # noqa: E501
