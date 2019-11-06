@@ -6,6 +6,7 @@ import datetime as dt
 import requests
 from schema_org.so_core import SchemaDotOrgHarvester
 
+
 def parse_robots(url):
     """Parses robots.txt to find sitemap(s)
 
@@ -47,11 +48,8 @@ def extract_jsonld(url):
     """
     obj = SchemaDotOrgHarvester(log_to_string=True, log_to_stdout=False)
     doc = asyncio.run(obj.retrieve_landing_page_content(url))
-    jsonld = obj.extract_jsonld_from_landing_page(doc)
-    obj.jsonld_validator.check(jsonld)
+    jsonld = obj.get_jsonld(doc)
 
     logs = obj.extract_log_messages()
 
     return jsonld, logs
-
-

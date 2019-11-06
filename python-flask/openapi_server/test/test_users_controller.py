@@ -22,6 +22,11 @@ class TestUsersController(WillItSyncTestCase):
 
         Extract schema.org metadata
         """
+        testfile = 'valid_schema_dot_org.json'
+        text = ir.read_text('openapi_server.test.data', testfile)
+        data = json.loads(text)
+        self.setup_so_patcher(jsonld=data)
+
         url = 'https://www.archive.arm.gov/metadata/html/pghnoaaaosM1.b1.html'
         query_string = [('url', url)]
         headers = {
@@ -34,6 +39,51 @@ class TestUsersController(WillItSyncTestCase):
             headers=headers,
             query_string=query_string)
         self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_parse_langingpage_400(self):
+        """Test case for parse_langingpage where an exception is thrown.
+
+        EXPECTED RESULT:  400 error
+        """
+        self.setup_so_patcher(jsonld=RuntimeError('bad stuff happened'))
+
+        url = 'https://www.archive.arm.gov/metadata/html/pghnoaaaosM1.b1.html'
+        query_string = [('url', url)]
+        headers = {
+            'Accept': 'application/json',
+        }
+
+        response = self.client.open(
+            '/jevans97utk/willitsync/1.0.2/so',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
+        self.assert400(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_parse_langingpage_404(self):
+        """Test case for parse_langingpage where the URL doesn't exist
+
+        EXPECTED RESULT:  404 error
+        """
+        e = Exception()
+        e.message = 'bad stuff happened'
+        e.status = 404
+        self.setup_so_patcher(content=e)
+
+        url = 'https://www.archive.arm.gov/metadata/html/pghnoaaaosM1.b1.html'
+        query_string = [('url', url)]
+        headers = {
+            'Accept': 'application/json',
+        }
+
+        response = self.client.open(
+            '/jevans97utk/willitsync/1.0.2/so',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
+        self.assert404(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
     def test_parse_robots(self):

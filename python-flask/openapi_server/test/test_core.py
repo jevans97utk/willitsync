@@ -49,6 +49,31 @@ class MockRequestsGet(object):
             raise requests.HTTPError(response=response)
 
 
+class MockSchemaDotOrgHarvester(object):
+    def __init__(self, content=None, jsonld=None, logs=None):
+        self.content = content
+        self.jsonld = jsonld
+        self.logs = logs
+
+    def extract_log_messages(self):
+        if self.logs is None:
+            return ['Stuff happened']
+        else:
+            return self.logs
+
+    def get_jsonld(self, url):
+        if isinstance(self.jsonld, Exception):
+            raise self.jsonld
+
+        return self.jsonld
+
+    async def retrieve_landing_page_content(self, url):
+        if isinstance(self.content, Exception):
+            raise self.content
+
+        return self.content
+
+
 class WillItSyncTestCase(BaseTestCase):
     """
     Both the developers and users controller test cases use the same test
@@ -60,10 +85,16 @@ class WillItSyncTestCase(BaseTestCase):
         if hasattr(self, 'requests_patcher'):
             self.requests_patcher.stop()
 
+        if hasattr(self, 'so_patcher'):
+            self.so_patcher.stop()
+
     def tearDown(self):
 
         if hasattr(self, 'requests_patcher'):
             self.requests_patcher.stop()
+
+        if hasattr(self, 'so_patcher'):
+            self.so_patcher.stop()
 
     def setup_requests_patcher(self, status_code, content):
 
@@ -75,3 +106,17 @@ class WillItSyncTestCase(BaseTestCase):
         self.requests_patcher = patch(patchee, side_effect=side_effect)
 
         self.requests_patcher.start()
+
+    def setup_so_patcher(self, jsonld=None, content=None):
+        """
+        Setup the schema.org patcher.
+        """
+
+        side_effect = [
+            MockSchemaDotOrgHarvester(jsonld=jsonld, content=content)
+        ]
+
+        patchee = 'openapi_server.controllers.business_logic.SchemaDotOrgHarvester'
+        self.so_patcher = patch(patchee, side_effect=side_effect)
+
+        self.so_patcher.start()
