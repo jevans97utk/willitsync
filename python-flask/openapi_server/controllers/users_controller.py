@@ -73,4 +73,17 @@ def parse_sitemap(url, maxlocs=None):  # noqa: E501
 
     :rtype: Sitemap
     """
-    return 'do some magic!'
+    try:
+        sitemaps, date, logs, urlset = bl.parse_sitemap(url)
+    except Exception as e:
+        return e.response.text, e.response.status_code
+    else:
+        kwargs = {
+            'sitemaps': sitemaps,
+            'evaluated_date': date,
+            'log': logs,
+            'urlset': urlset,
+        }
+        s = Sitemap(**kwargs)
+        #j = s.to_dict()
+        return s, 200

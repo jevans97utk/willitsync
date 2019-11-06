@@ -7,6 +7,28 @@ import requests
 from schema_org.so_core import SchemaDotOrgHarvester
 
 
+def parse_sitemap(url):
+    """
+    """
+    date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+
+    kwargs = {
+        'log_to_string': True,
+        'log_to_stdout': False,
+        'no_harvest': True,
+        'ignore_harvest_time': True,
+    }
+    obj = SchemaDotOrgHarvester(**kwargs)
+    obj.sitemap = url
+    asyncio.run(obj.run())
+
+    sitemaps = obj.sitemaps
+    urlset = obj.sitemap_records
+
+    logs = obj.extract_log_messages()
+
+    return sitemaps, date, logs, urlset
+
 def parse_robots(url):
     """Parses robots.txt to find sitemap(s)
 
