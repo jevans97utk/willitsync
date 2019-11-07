@@ -48,6 +48,95 @@ paths:
       - developers
       - users
       x-openapi-router-controller: openapi_server.controllers.developers_controller
+  /scivalid:
+    get:
+      description: |
+        Given a url referencing an XML metadata document, retrieve and
+        validate the XML.
+      operationId: get_validate_metadata
+      parameters:
+      - description: "URL referencing a science metadata XML document to retrieve\
+          \ \nand validate.\n"
+        example: https://my.server/metadata/iso_metadata.xml
+        explode: true
+        in: query
+        name: url
+        required: true
+        schema:
+          format: url
+          type: string
+        style: form
+      - description: |
+          The DataONE formatId of the XML to test for validity.
+        example: http://www.isotc211.org/2005/gmd
+        explode: true
+        in: query
+        name: formatid
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SCIMetadata'
+          description: "Metadata successfully parsed and validated. The response body\
+            \ \ncontains the retrieved XML metadata.\n"
+        400:
+          description: Bad input parameter
+        404:
+          description: No XML document found at url
+      summary: Retrieve and validate a science metadata XML document
+      tags:
+      - developers
+      - users
+      x-openapi-router-controller: openapi_server.controllers.developers_controller
+    post:
+      description: |
+        Given an XML metadata document, validate the XML.
+      operationId: validate_metadata
+      parameters:
+      - description: |
+          The DataONE formatId of the XML to test for validity.
+        example: http://www.isotc211.org/2005/gmd
+        explode: true
+        in: query
+        name: formatid
+        required: true
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          text/xml:
+            schema:
+              format: xml
+              type: string
+          application/xml:
+            schema:
+              format: xml
+              type: string
+        description: |
+          Science metadata XML document to validate.
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SCIMetadata'
+          description: |
+            JSON-LD successfully parsed and validated. The response body contains the
+            retrieved schema.org JSON-LD object in the metadata element.
+        400:
+          description: Bad input parameter
+      summary: Validate provided schema.org JSON-LD document
+      tags:
+      - developers
+      - users
+      x-openapi-router-controller: openapi_server.controllers.developers_controller
   /sitemap:
     get:
       description: Parses a sitemap to retrieve entries.
@@ -115,6 +204,89 @@ paths:
         404:
           description: No landing page document found at url
       summary: Extract schema.org metadata
+      tags:
+      - developers
+      - users
+      x-openapi-router-controller: openapi_server.controllers.developers_controller
+  /sovalid:
+    get:
+      description: "Given a url referencing a schema.org JSON-LD document, verify\
+        \ that \nthe structure matches expected model indicated in the type parameter.\n"
+      operationId: get_validate_so
+      parameters:
+      - description: |
+          URL referencing a schema.org JSON-LD document to retrieve and validate.
+        explode: true
+        in: query
+        name: url
+        required: true
+        schema:
+          format: url
+          type: string
+        style: form
+      - description: |
+          The name of the schema.org type to test for validity.
+        explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          default: Dataset
+          type: string
+        style: form
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
+          description: |
+            JSON-LD successfully parsed and validated. The response body contains the
+            retrieved schema.org JSON-LD object in the metadata element.
+        400:
+          description: Bad input parameter
+        404:
+          description: No JSON-LD document found at url
+      summary: Retrieve and validate a schema.org JSON-LD document
+      tags:
+      - developers
+      - users
+      x-openapi-router-controller: openapi_server.controllers.developers_controller
+    post:
+      description: "Given a schema.org JSON-LD document, verify that the structure\
+        \ \nmatches expected model indicated in the type parameter.\n"
+      operationId: validate_so
+      parameters:
+      - description: |
+          The name of the schema.org type to test for validity.
+        explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          default: Dataset
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: |
+          Schema.org JSON-LD to validate.
+        required: true
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
+          description: |
+            JSON-LD successfully parsed and validated. The response body contains the
+            retrieved schema.org JSON-LD object in the metadata element.
+        400:
+          description: Bad input parameter
+      summary: Validate provided schema.org JSON-LD document
       tags:
       - developers
       - users
@@ -232,9 +404,9 @@ components:
       properties:
         url:
           description: |
-            URL of the landing page that was parsed. If a redirection
+            URL of the content that was parsed. If a redirection
             occurs, then this is the final URL that was used to
-            retrieve the landing page.
+            retrieve the content.
           format: url
           type: string
         evaluated_date:
@@ -249,9 +421,47 @@ components:
           type: array
         metadata:
           description: |
-            The schema.org metadata that was retrieved form the
-            landing page
+            The schema.org metadata that was retrieved.
           type: object
+      required:
+      - evaluated_date
+      - log
+      - metadata
+      - url
+    SCIMetadata:
+      example:
+        metadata: metadata
+        log:
+        - msg: A debug message
+          level: 10
+          timestamp: 2016-08-29T09:12:33.001Z
+        - msg: A debug message
+          level: 10
+          timestamp: 2016-08-29T09:12:33.001Z
+        evaluated_date: 2000-01-23T04:56:07.000+00:00
+        url: http://example.com/aeiou
+      properties:
+        url:
+          description: "URL of the XML document that was retrieved and processed.\
+            \ If a \nredirection occurs, then this is the final URL that was used\
+            \ to\nretrieve the document.\n"
+          format: url
+          type: string
+        evaluated_date:
+          description: |
+            The timestamp for when the evaluation the landing page
+            was initiated.
+          format: date-time
+          type: string
+        log:
+          items:
+            $ref: '#/components/schemas/LogEntry'
+          type: array
+        metadata:
+          description: |
+            The XML metadata document that was validated.
+          format: xml
+          type: string
       required:
       - evaluated_date
       - log
