@@ -109,6 +109,84 @@ paths:
           description: Bad input parameter
         '404':
           description: No landing page document found at url
+  /sovalid:
+    get:
+      summary: Retrieve and validate a schema.org JSON-LD document
+      description: |
+        Given a url referencing a schema.org JSON-LD document, verify that 
+        the structure matches expected model indicated in the type parameter.
+      tags:
+        - developers
+        - users
+      operationId:
+        getValidateSO
+      parameters:
+        - in: query
+          name: url
+          required: true
+          description: |
+            URL referencing a schema.org JSON-LD document to retrieve and validate.
+          schema:
+            type: string
+            format: url
+        - in: query
+          name: type
+          description: |
+            The name of the schema.org type to test for validity.
+          schema:
+            type: string
+            default: Dataset
+      responses:
+        '200':
+          description: |
+            JSON-LD successfully parsed and validated. The response body contains the
+            retrieved schema.org JSON-LD object in the metadata element.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
+        '400':
+          description: Bad input parameter
+        '404':
+          description: No JSON-LD document found at url
+    post:
+      summary: Validate provided schema.org JSON-LD document
+      tags:
+        - developers
+        - users
+      description: |
+        Given a schema.org JSON-LD document, verify that the structure 
+        matches expected model indicated in the type parameter.
+      operationId:
+        validateSO
+      requestBody:
+        description: |
+          Schema.org JSON-LD to validate.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      parameters:
+        - in: query
+          name: type
+          description: |
+            The name of the schema.org type to test for validity.
+          schema:
+            type: string
+            default: Dataset
+      responses:
+        '200':
+          description: |
+            JSON-LD successfully parsed and validated. The response body contains the
+            retrieved schema.org JSON-LD object in the metadata element.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
+        '400':
+          description: Bad input parameter
+
 components:
   schemas:
     RobotsFile:
