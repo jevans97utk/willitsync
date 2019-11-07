@@ -81,6 +81,7 @@ def parse_robots(url):  # noqa: E501
 
     :rtype: RobotsFile
     """
+    breakpoint()
     try:
         date, sitemaps = bl.parse_robots(url)
     except Exception as e:
