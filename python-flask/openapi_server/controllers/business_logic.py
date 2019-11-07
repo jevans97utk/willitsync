@@ -9,6 +9,19 @@ from schema_org.so_core import SchemaDotOrgHarvester
 
 def parse_sitemap(url):
     """
+    Business logic for using schema_org to process sitemaps.
+
+    Returns
+    -------
+    sitemaps
+        list of all sitemap URLs on the web site
+    date
+        datetime of this request
+    logs
+        list of log entries for this operation
+    urlset
+        list of tuples consisting of a landing page URL and the last modified
+        time of the landing page
     """
     date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
@@ -22,8 +35,8 @@ def parse_sitemap(url):
     obj.sitemap = url
     asyncio.run(obj.run())
 
-    sitemaps = obj.sitemaps
-    urlset = obj.sitemap_records
+    sitemaps = obj.get_sitemaps()
+    urlset = obj.get_sitemaps_urlset()
 
     logs = obj.extract_log_messages()
 
