@@ -26,7 +26,7 @@ def get_validate_metadata(url, formatid):  # noqa: E501
     return 'do some magic!'
 
 
-def get_validate_so(url, type=None):  # noqa: E501
+def get_validate_so(url, type=None, _type=None, type_=None):  # noqa: E501
     """Retrieve and validate a schema.org JSON-LD document
 
     Given a url referencing a schema.org JSON-LD document, verify that  the structure matches expected model indicated in the type parameter.  # noqa: E501
@@ -38,6 +38,7 @@ def get_validate_so(url, type=None):  # noqa: E501
 
     :rtype: SOMetadata
     """
+    breakpoint()
     return 'do some magic!'
 
 

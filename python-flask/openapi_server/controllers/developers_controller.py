@@ -25,7 +25,7 @@ def get_validate_metadata(url, formatid):  # noqa: E501
     return 'do some magic!'
 
 
-def get_validate_so(url, type=None):  # noqa: E501
+def get_validate_so(url, **kwargs):  # noqa: E501
     """Retrieve and validate a schema.org JSON-LD document
 
     Given a url referencing a schema.org JSON-LD document, verify that  the structure matches expected model indicated in the type parameter.  # noqa: E501
@@ -37,7 +37,32 @@ def get_validate_so(url, type=None):  # noqa: E501
 
     :rtype: SOMetadata
     """
-    return 'do some magic!'
+    type = 'Dataset'
+    for key in kwargs:
+        if 'type' in key:
+            type = kwargs[key]
+
+    if type != 'Dataset':
+        return 'Invalid type parameter', 400
+
+    try:
+        date, jsonld, logs = bl.get_validate_so(url, type=type)
+    except Exception as e:
+        if hasattr(e, 'message') and hasattr(e, 'status'):
+            # It looks like a requests/aiohttp error
+            return e.message, e.status
+
+        # Anything else, return a 400
+        return str(e), 400
+
+    kwargs = {
+        'url': url,
+        'evaluated_date': date,
+        'log': logs,
+        'metadata': jsonld,
+    }
+    so_obj = SOMetadata(**kwargs)
+    return so_obj, 200
 
 
 def parse_langingpage(url):  # noqa: E501
@@ -133,7 +158,8 @@ def validate_metadata(formatid, body):  # noqa: E501
 def validate_so(body, type=None):  # noqa: E501
     """Validate provided schema.org JSON-LD document
 
-    Given a schema.org JSON-LD document, verify that the structure  matches expected model indicated in the type parameter.  # noqa: E501
+    Given a schema.org JSON-LD document, verify that the structure
+    matches expected model indicated in the type parameter.
 
     :param body: Schema.org JSON-LD to validate. 
     :type body: 
