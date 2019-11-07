@@ -1,17 +1,21 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+import datetime as dt
 import importlib.resources as ir
+import json
 import unittest
 
-from flask import json
-from six import BytesIO
+import dateutil.parser
+import dateutil.tz
+# from flask import json
+# from six import BytesIO
 
-from openapi_server.models.robots_file import RobotsFile  # noqa: E501
-from openapi_server.models.so_metadata import SOMetadata  # noqa: E501
-from openapi_server.models.sitemap import Sitemap  # noqa: E501
-from openapi_server.test import BaseTestCase
-from .test_core import MockRequestsGet, WillItSyncTestCase
+# from openapi_server.models.robots_file import RobotsFile  # noqa: E501
+# from openapi_server.models.so_metadata import SOMetadata  # noqa: E501
+# from openapi_server.models.sitemap import Sitemap  # noqa: E501
+# from openapi_server.test import BaseTestCase
+from .test_core import WillItSyncTestCase
 
 
 class TestUsersController(WillItSyncTestCase):
@@ -145,6 +149,17 @@ class TestUsersController(WillItSyncTestCase):
 
         Parses sitemap.xml
         """
+
+        # Setup the mocked return values
+        sitemaps = ['https://nytimes.com/sitemap.xml']
+        now = dt.datetime.now(dateutil.tz.tzutc())
+        sitemaps_urlset = [
+            ('https://www.nytimes.com/stuff_happened.html', now),
+            ('https://www.nytimes.com/and_then_some.html', now)
+        ]
+        self.setup_so_patcher(sitemaps=sitemaps,
+                              sitemaps_urlset=sitemaps_urlset)
+
         query_string = [('url', 'url_example'),
                         ('maxlocs', 56)]
         headers = {
@@ -157,6 +172,16 @@ class TestUsersController(WillItSyncTestCase):
             query_string=query_string)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
+
+        j = json.loads(response.data.decode('utf-8'))
+
+        expected = sitemaps
+        self.assertEqual(j['sitemaps'], sitemaps)
+
+        expected = [
+            [item[0], item[1].isoformat()] for item in sitemaps_urlset
+        ]
+        self.assertEqual(j['urlset'], expected)
 
 
 if __name__ == '__main__':

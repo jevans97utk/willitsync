@@ -10,7 +10,7 @@ from six import BytesIO
 
 from openapi_server.models.robots_file import RobotsFile  # noqa: E501
 from openapi_server.test import BaseTestCase
-from .test_core import MockRequestsGet, WillItSyncTestCase
+from .test_core import WillItSyncTestCase
 
 
 class TestDevelopersController(WillItSyncTestCase):

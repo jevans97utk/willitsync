@@ -50,10 +50,31 @@ class MockRequestsGet(object):
 
 
 class MockSchemaDotOrgHarvester(object):
-    def __init__(self, content=None, jsonld=None, logs=None):
+    def __init__(self, content=None, jsonld=None, logs=None, sitemaps=None,
+                 sitemaps_urlset=None):
         self.content = content
         self.jsonld = jsonld
         self.logs = logs
+        self.sitemaps = sitemaps
+        self.sitemaps_urlset = sitemaps_urlset
+
+    def get_sitemaps(self):
+        """
+        Corresponds to get_sitemaps method in SchemaDotOrgHarvester
+        """
+        if self.sitemaps is None:
+            return []
+        else:
+            return self.sitemaps
+
+    def get_sitemaps_urlset(self):
+        """
+        Corresponds to get_sitemaps_urlset method in SchemaDotOrgHarvester
+        """
+        if self.sitemaps_urlset is None:
+            return []
+        else:
+            return self.sitemaps_urlset
 
     def extract_log_messages(self):
         if self.logs is None:
@@ -72,6 +93,9 @@ class MockSchemaDotOrgHarvester(object):
             raise self.content
 
         return self.content
+
+    async def run(self):
+        pass
 
 
 class WillItSyncTestCase(BaseTestCase):
@@ -107,16 +131,28 @@ class WillItSyncTestCase(BaseTestCase):
 
         self.requests_patcher.start()
 
-    def setup_so_patcher(self, jsonld=None, content=None):
+    def setup_so_patcher(self, **kwargs):
         """
         Setup the schema.org patcher.
+
+        Parameters
+        ----------
+        jsonld
+            JSON to be returned by get_jsonld method
+        content : binary sequene
+            binary content to be returned by retrieve_landing_page_content
+            method
+        sitemaps : list
+            List of leaf sitemap URLs assumed visited by the harvester
+        sitemaps_urlset : list
+            List of landing pages and lastmod times assumed to be harvested.
         """
 
         side_effect = [
-            MockSchemaDotOrgHarvester(jsonld=jsonld, content=content)
+            MockSchemaDotOrgHarvester(**kwargs)
         ]
 
-        patchee = 'openapi_server.controllers.business_logic.SchemaDotOrgHarvester'
+        patchee = 'openapi_server.controllers.business_logic.SchemaDotOrgHarvester'  # noqa : E501
         self.so_patcher = patch(patchee, side_effect=side_effect)
 
         self.so_patcher.start()
