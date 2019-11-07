@@ -186,6 +186,91 @@ paths:
                 $ref: '#/components/schemas/SOMetadata'
         '400':
           description: Bad input parameter
+  /scivalid:
+    get:
+      summary: Retrieve and validate a science metadata XML document
+      description: |
+        Given a url referencing an XML metadata document, retrieve and
+        validate the XML.
+      tags:
+        - developers
+        - users
+      operationId:
+        getValidateMetadata
+      parameters:
+        - in: query
+          name: url
+          required: true
+          description: |
+            URL referencing a science metadata XML document to retrieve 
+            and validate.
+          example: "https://my.server/metadata/iso_metadata.xml"
+          schema:
+            type: string
+            format: url
+        - in: query
+          name: formatid
+          required: true
+          description: |
+            The DataONE formatId of the XML to test for validity.
+          example: "http://www.isotc211.org/2005/gmd"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: |
+            Metadata successfully parsed and validated. The response body 
+            contains the retrieved XML metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SCIMetadata'
+        '400':
+          description: Bad input parameter
+        '404':
+          description: No XML document found at url
+    post:
+      summary: Validate provided schema.org JSON-LD document
+      tags:
+        - developers
+        - users
+      description: |
+        Given an XML metadata document, validate the XML.
+      operationId:
+        validateMetadata
+      requestBody:
+        description: |
+          Science metadata XML document to validate.
+        required: true
+        content:
+          text/xml:
+            schema:
+              type: string
+              format: xml
+          application/xml:
+            schema:
+              type: string
+              format: xml
+      parameters:
+        - in: query
+          name: formatid
+          required: true
+          description: |
+            The DataONE formatId of the XML to test for validity.
+          example: "http://www.isotc211.org/2005/gmd"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: |
+            JSON-LD successfully parsed and validated. The response body contains the
+            retrieved schema.org JSON-LD object in the metadata element.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SCIMetadata'
+        '400':
+          description: Bad input parameter
 
 components:
   schemas:
@@ -275,9 +360,9 @@ components:
           type: string
           format: url
           description: |
-            URL of the landing page that was parsed. If a redirection
+            URL of the content that was parsed. If a redirection
             occurs, then this is the final URL that was used to
-            retrieve the landing page.
+            retrieve the content.
         evaluated_date:
           type: string
           format: date-time
@@ -289,8 +374,34 @@ components:
         metadata:
           type: object
           description: |
-            The schema.org metadata that was retrieved form the
-            landing page
+            The schema.org metadata that was retrieved.
+    SCIMetadata:
+      required:
+        - url
+        - evaluated_date
+        - log
+        - metadata
+      properties:
+        url:
+          type: string
+          format: url
+          description: |
+            URL of the XML document that was retrieved and processed. If a 
+            redirection occurs, then this is the final URL that was used to
+            retrieve the document.
+        evaluated_date:
+          type: string
+          format: date-time
+          description: |
+            The timestamp for when the evaluation the landing page
+            was initiated.
+        log:
+          $ref: '#/components/schemas/Log'
+        metadata:
+          type: string
+          format: xml
+          description: |
+            The XML metadata document that was validated.
     Log:
       type: array
       items:
