@@ -38,7 +38,7 @@ def parse_landing_page(url):  # noqa: E501
         'metadata': jsonld,
     }
     so_obj = SOMetadata(**kwargs)
-    return so_obj.to_dict(), 200
+    return so_obj, 200
 
 
 def parse_robots(url):  # noqa: E501
@@ -57,8 +57,7 @@ def parse_robots(url):  # noqa: E501
         return e.response.text, e.response.status_code
     else:
         r = RobotsFile(url, sitemaps=sitemaps, evaluated_date=date)
-        j = [r.to_dict()]
-        return j, 200
+        return r, 200
 
 
 def parse_sitemap(url, maxlocs=None):  # noqa: E501
@@ -85,5 +84,4 @@ def parse_sitemap(url, maxlocs=None):  # noqa: E501
             'urlset': urlset,
         }
         s = Sitemap(**kwargs)
-        #j = s.to_dict()
         return s, 200
