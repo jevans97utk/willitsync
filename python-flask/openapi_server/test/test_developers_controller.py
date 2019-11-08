@@ -104,6 +104,32 @@ class TestDevelopersController(WillItSyncTestCase):
         actual = json.load(io.BytesIO(response.data))
         self.assertEqual(expected, actual['sitemaps'])
 
+    def test_parse_robots_empty(self):
+        """
+        SCENARIO:  parse a robots.txt file from NYTIMES that has no sitemaps
+
+        EXPECTED RESPONSE:  200 status code, no sitemaps in an array
+        """
+        data = ir.read_binary('openapi_server.test.data.nytimes',
+                              'robots_no_sitemaps.txt')
+        self.setup_requests_patcher(200, data)
+
+        query_string = [('url', 'https://nytimes.com/robots.txt')]
+        headers = {
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/jevans97utk/willitsync/1.0.2/robots',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+        expected = []
+        actual = json.load(io.BytesIO(response.data))
+        self.assertEqual(expected, actual['sitemaps'])
+
 
 if __name__ == '__main__':
     unittest.main()
