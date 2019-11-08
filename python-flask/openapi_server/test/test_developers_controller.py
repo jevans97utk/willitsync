@@ -9,6 +9,7 @@ import json
 import unittest
 
 # 3rd party library imports
+from aioresponses import aioresponses
 import dateutil.parser
 
 # Local imports
@@ -122,7 +123,6 @@ class TestDevelopersController(WillItSyncTestCase):
 
         EXPECTED RESULT:  400 error
         """
-        self.setup_so_patcher(jsonld=RuntimeError('bad stuff happened'))
 
         url = 'https://www.archive.arm.gov/metadata/html/pghnoaaaosM1.b1.html'
         query_string = [('url', url)]
@@ -130,23 +130,24 @@ class TestDevelopersController(WillItSyncTestCase):
             'Accept': 'application/json',
         }
 
-        response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/so',
-            method='GET',
-            headers=headers,
-            query_string=query_string)
-        self.assert400(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+        with aioresponses() as m:
+            m.get(url, status=400)
 
-    def test_parse_langingpage_404(self):
-        """Test case for parse_langingpage where the URL doesn't exist
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/so',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+            message = f"Response body is : {response.data.decode('utf-8')}"
+            self.assert400(response, message)
+
+    def test_parse_landing_page_404(self):
+        """
+        SCENARIO: The SO harvester issues a 404 error when we attempt to
 
         EXPECTED RESULT:  404 error
         """
-        e = Exception()
-        e.message = 'bad stuff happened'
-        e.status = 404
-        self.setup_so_patcher(content=e)
 
         url = 'https://www.archive.arm.gov/metadata/html/pghnoaaaosM1.b1.html'
         query_string = [('url', url)]
@@ -154,13 +155,17 @@ class TestDevelopersController(WillItSyncTestCase):
             'Accept': 'application/json',
         }
 
-        response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/so',
-            method='GET',
-            headers=headers,
-            query_string=query_string)
-        self.assert404(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+        with aioresponses() as m:
+            m.get(url, status=404)
+
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/so',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+            message = f"Response body is : {response.data.decode('utf-8')}"
+            self.assert404(response, message)
 
     def test_parse_robots(self):
         """

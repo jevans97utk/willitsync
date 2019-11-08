@@ -1,10 +1,7 @@
 import connexion  # noqa : F401
 import six  # noqa : F401
 
-from openapi_server.models.robots_file import RobotsFile  # noqa: E501
 from openapi_server.models.sci_metadata import SCIMetadata  # noqa: E501, F401
-from openapi_server.models.so_metadata import SOMetadata  # noqa: E501
-from openapi_server.models.sitemap import Sitemap  # noqa: E501
 from openapi_server import util  # noqa : F401
 
 # local imports
