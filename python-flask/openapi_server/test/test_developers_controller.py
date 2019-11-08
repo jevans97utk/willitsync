@@ -1,13 +1,17 @@
 # coding: utf-8
 
+# standard library imports
 from __future__ import absolute_import
 import datetime as dt
 import importlib.resources as ir
 import io
+import json
 import unittest
 
-from flask import json
+# 3rd party library imports
+import dateutil.parser
 
+# Local imports
 from openapi_server.models.robots_file import RobotsFile  # noqa: E501, F401
 from .test_core import WillItSyncTestCase
 
@@ -71,10 +75,11 @@ class TestDevelopersController(WillItSyncTestCase):
         json.load(io.BytesIO(response.data))
         self.assertTrue(True)
 
-    def test_parse_langingpage(self):
-        """Test case for parse_langingpage
+    def test_parse_landing_page(self):
+        """
+        SCENARIO:  A landing page with valid JSON-LD is to be parsed.
 
-        Extract schema.org metadata
+        EXPECTED RESULT:  The response body is SOmetadata.
         """
         testfile = 'valid_schema_dot_org.json'
         text = ir.read_text('openapi_server.test.data', testfile)
@@ -94,6 +99,18 @@ class TestDevelopersController(WillItSyncTestCase):
             query_string=query_string)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
+
+        data = json.load(io.BytesIO(response.data))
+
+        self.assertEqual(url, data['url'])
+
+        # can we parse the date?
+        dateutil.parser.parse(data['evaluated_date'])
+
+        self.assertTrue('log' in data)
+
+        # can we dump the metadata?
+        json.dumps(data['metadata'])
 
     def test_parse_langingpage_400(self):
         """Test case for parse_langingpage where an exception is thrown.

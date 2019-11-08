@@ -1,5 +1,6 @@
 # Standard library imports
 import collections
+import json
 from unittest.mock import patch
 
 # 3rd party library imports
@@ -78,7 +79,15 @@ class MockSchemaDotOrgHarvester(object):
 
     def get_log_messages(self):
         if self.logs is None:
-            return ['Stuff happened']
+            items = [{
+                "name": "root", 
+                "levelname": "WARNING", 
+                "asctime": 
+                "2019-11-08 10:54:02,340", 
+                "message": "blah"
+            }]
+            logs = json.dumps(items)
+            return logs
         else:
             return self.logs
 

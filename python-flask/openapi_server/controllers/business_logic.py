@@ -6,6 +6,9 @@ import datetime as dt
 import requests
 from schema_org.so_core import SchemaDotOrgHarvester
 
+# local imports
+from openapi_server.models.log_entry import LogEntry
+
 
 def get_current_utc_timestamp():
     return dt.datetime.utcnow() \
@@ -36,6 +39,11 @@ def get_validate_so(url, type='Dataset'):
 def parse_sitemap(url):
     """
     Business logic for using schema_org to process sitemaps.
+
+    Parameters
+    ----------
+    url : str
+        URL pointing to a sitemap
 
     Returns
     -------

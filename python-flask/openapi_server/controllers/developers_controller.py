@@ -1,10 +1,15 @@
+# Standard library imports
+import json
+import logging
+
 # import connexion
 # import six
 
-from openapi_server.models.robots_file import RobotsFile  # noqa: E501
-# from openapi_server.models.sci_metadata import SCIMetadata  # noqa: E501
-from openapi_server.models.so_metadata import SOMetadata  # noqa: E501
-from openapi_server.models.sitemap import Sitemap  # noqa: E501
+from openapi_server.models.log_entry import LogEntry
+from openapi_server.models.robots_file import RobotsFile
+# from openapi_server.models.sci_metadata import SCIMetadata
+from openapi_server.models.so_metadata import SOMetadata
+from openapi_server.models.sitemap import Sitemap
 # from openapi_server import util
 
 from . import business_logic as bl
@@ -96,6 +101,8 @@ def parse_langingpage(url):  # noqa: E501
         # Anything else, return a 400
         return str(e), 400
 
+    logs = _post_process_logs(logs)
+
     kwargs = {
         'url': url,
         'evaluated_date': date,
@@ -137,9 +144,11 @@ def parse_sitemap(url, maxlocs=None):  # noqa: E501
 
     :rtype: Sitemap
     """
+
     try:
         sitemaps, date, logs, urlset = bl.parse_sitemap(url)
     except Exception as e:
+        breakpoint()
         return e.response.text, e.response.status_code
     else:
         kwargs = {
@@ -181,3 +190,39 @@ def validate_so(body, type=None):  # noqa: E501
     :rtype: SOMetadata
     """
     return 'do some magic!'
+
+
+def _post_process_logs(logs):
+    """
+    Put the already-JSON-formatted log entries into the expected form.
+
+    Parameters
+    ----------
+    logs : str
+        Single string of log entries.
+
+    Returns
+    -------
+    array of LogEntry objects
+    """
+    log_items = json.loads(logs)
+
+    logs = []
+    for entry in log_items:
+
+        # "msg" instead of "message"
+        entry['msg'] = entry.pop('message')
+
+        # "level" is an int
+        entry['level'] = getattr(logging, entry.pop('levelname'))
+
+        # "timestamp" instead of "asctime" with Z tacked onto the end to
+        # designate UTC.
+        entry['timestamp'] = f"{entry.pop('asctime')}Z"
+
+        # Get rid of the name of the logger.
+        entry.pop('name')
+
+        logs.append(LogEntry(**entry))
+
+    return logs
