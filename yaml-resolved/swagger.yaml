@@ -7,7 +7,7 @@ info:
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
-  version: 1.1.0
+  version: 1.1.1
 servers:
   - url: 'https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.2'
     description: SwaggerHub API Auto Mocking
@@ -31,6 +31,7 @@ paths:
           in: query
           description: URL pointing to a robots.txt file
           required: true
+          example: "https://my.server.org/robots.txt"
           schema:
             type: string
             format: url
@@ -43,8 +44,16 @@ paths:
                 $ref: '#/components/schemas/RobotsFile'
         '400':
           description: bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RobotsFile'
         '404':
           description: No robots.txt file found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RobotsFile'
   /sitemap:
     get:
       summary: Parses sitemap.xml
@@ -58,16 +67,17 @@ paths:
           name: url
           description: URL pointing to a sitemap xml document.
           required: true
+          example: "https://my.server.org/sitemap.xml"
           schema:
             type: string
             format: url
         - in: query
           name: maxlocs
           description: |
-            Maximum number of sitemap locations to return (100)
-          required: false
+            Maximum number of sitemap locations to return
           schema:
             type: integer
+            default: 100
       responses:
         '200':
           description: Sitemap successfully retrieved and parsed
@@ -77,8 +87,16 @@ paths:
                 $ref: '#/components/schemas/Sitemap'
         '400':
           description: Bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sitemap'
         '404':
           description: No sitemap document found at url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sitemap'
   /so:
     get:
       summary: Extract schema.org metadata
@@ -107,8 +125,16 @@ paths:
                 $ref: '#/components/schemas/SOMetadata'
         '400':
           description: Bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
         '404':
           description: No landing page document found at url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
   /sovalid:
     get:
       summary: Retrieve and validate a schema.org JSON-LD document
@@ -126,6 +152,7 @@ paths:
           required: true
           description: |
             URL referencing a schema.org JSON-LD document to retrieve and validate.
+          example: "https://my.server.net/data/dataset_1/jsonld.json"
           schema:
             type: string
             format: url
@@ -147,8 +174,16 @@ paths:
                 $ref: '#/components/schemas/SOMetadata'
         '400':
           description: Bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
         '404':
           description: No JSON-LD document found at url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
     post:
       summary: Validate provided schema.org JSON-LD document
       tags:
@@ -186,6 +221,10 @@ paths:
                 $ref: '#/components/schemas/SOMetadata'
         '400':
           description: Bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
   /scivalid:
     get:
       summary: Retrieve and validate a science metadata XML document
@@ -227,8 +266,16 @@ paths:
                 $ref: '#/components/schemas/SCIMetadata'
         '400':
           description: Bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SCIMetadata'
         '404':
           description: No XML document found at url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SCIMetadata'
     post:
       summary: Validate provided schema.org JSON-LD document
       tags:
@@ -271,6 +318,10 @@ paths:
                 $ref: '#/components/schemas/SCIMetadata'
         '400':
           description: Bad input parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SCIMetadata'
 
 components:
   schemas:
