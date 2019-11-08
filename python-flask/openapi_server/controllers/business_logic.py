@@ -51,9 +51,9 @@ def parse_sitemap(url):
         'log_to_stdout': False,
         'no_harvest': True,
         'ignore_harvest_time': True,
-        'sitemap_url': url,
     }
     obj = SchemaDotOrgHarvester(**kwargs)
+    obj.sitemap = url
     asyncio.run(obj.run())
 
     sitemaps = obj.get_sitemaps()
