@@ -12,6 +12,7 @@ def get_current_utc_timestamp():
              .replace(tzinfo=dt.timezone.utc) \
              .isoformat(timespec='milliseconds')
 
+
 def get_validate_so(url, type='Dataset'):
     """
     Business logic for using schema.org to validate a landing page.
