@@ -7,6 +7,11 @@ import requests
 from schema_org.so_core import SchemaDotOrgHarvester
 
 
+def get_current_utc_timestamp():
+    return dt.datetime.utcnow() \
+             .replace(tzinfo=dt.timezone.utc) \
+             .isoformat(timespec='milliseconds')
+
 def get_validate_so(url, type='Dataset'):
     """
     Business logic for using schema.org to validate a landing page.
@@ -43,7 +48,7 @@ def parse_sitemap(url):
         list of tuples consisting of a landing page URL and the last modified
         time of the landing page
     """
-    date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+    date = get_current_utc_timestamp()
 
     kwargs = {
         'log_to_string': True,
@@ -74,7 +79,7 @@ def parse_robots(url):
     url : str
         URL pointing to a robots.txt file
     """
-    date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+    date = get_current_utc_timestamp()
 
     r = requests.get(url)
     r.raise_for_status()
@@ -100,7 +105,7 @@ def parse_landing_page(url):
     logs
         list of log entries for this operation
     """
-    date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+    date = get_current_utc_timestamp()
 
     obj = SchemaDotOrgHarvester(log_to_string=True, log_to_stdout=False)
     doc = asyncio.run(obj.retrieve_landing_page_content(url))
