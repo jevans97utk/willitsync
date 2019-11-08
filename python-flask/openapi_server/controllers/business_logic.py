@@ -1,10 +1,31 @@
 # standard library imports
+import logging
 import asyncio
 import datetime as dt
 
 # 3rd party library imports
 import requests
+from extruct.jsonld import JsonLdExtractor
 from schema_org.so_core import SchemaDotOrgHarvester
+from openapi_server.models import log_entry
+
+
+def get_timestamp():
+    return dt.datetime.utcnow() \
+        .replace(tzinfo=dt.timezone.utc) \
+        .isoformat(timespec="milliseconds")
+
+
+def new_log(level, msg):
+    return log_entry.LogEntry(
+        level=level,
+        timestamp=get_timestamp(),
+        msg=msg
+    )
+
+
+def _log(log_list, level, msg):
+    log_list.append(new_log(level, msg))
 
 
 def parse_sitemap(url):
@@ -42,6 +63,7 @@ def parse_sitemap(url):
 
     return sitemaps, date, logs, urlset
 
+
 def parse_robots(url):
     """Parses robots.txt to find sitemap(s)
 
@@ -65,9 +87,16 @@ def parse_robots(url):
 
 def parse_landing_page(url):
 
-    date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-    jsonld, logs = extract_jsonld(url)
-    return date, jsonld, logs
+    tstamp = get_timestamp()
+    logs = []
+    response = requests.get(url)
+    _log(logs, logging.INFO, f"status: {response.status_code}")
+    if response.status_code != requests.codes.ok:
+        return tstamp, None, logs, response.url, response.status_code
+    jsonlde = JsonLdExtractor()
+    jsonld = jsonlde.extract(response.text)
+    #jsonld, logs = extract_jsonld(url)
+    return tstamp, jsonld, logs, response.url, 200
 
 
 def extract_jsonld(url):

@@ -20,7 +20,7 @@ def parse_langingpage(url):  # noqa: E501
     :rtype: SOMetadata
     """
     try:
-        date, jsonld, logs = bl.parse_landing_page(url)
+        date, jsonld, logs, purl = bl.parse_landing_page(url)
     except Exception as e:  # noqa:  F841
         if hasattr(e, 'message') and hasattr(e, 'status'):
             # It looks like a requests/aiohttp error
