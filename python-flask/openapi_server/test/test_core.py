@@ -76,7 +76,7 @@ class MockSchemaDotOrgHarvester(object):
         else:
             return self.sitemaps_urlset
 
-    def extract_log_messages(self):
+    def get_log_messages(self):
         if self.logs is None:
             return ['Stuff happened']
         else:

@@ -63,8 +63,7 @@ def parse_sitemap(url):
 
     sitemaps = obj.get_sitemaps()
     urlset = obj.get_sitemaps_urlset()
-
-    logs = obj.extract_log_messages()
+    logs = obj.get_log_messages()
 
     return sitemaps, date, logs, urlset
 
@@ -110,8 +109,8 @@ def parse_landing_page(url):
 
     obj = SchemaDotOrgHarvester(log_to_string=True, log_to_stdout=False)
     doc = asyncio.run(obj.retrieve_landing_page_content(url))
-    jsonld = obj.get_jsonld(doc)
 
-    logs = obj.extract_log_messages()
+    jsonld = obj.get_jsonld(doc)
+    logs = obj.get_log_messages()
 
     return date, jsonld, logs

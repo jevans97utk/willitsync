@@ -38,7 +38,6 @@ def get_validate_so(url, type=None, _type=None, type_=None):  # noqa: E501
 
     :rtype: SOMetadata
     """
-    breakpoint()
     return 'do some magic!'
 
 
@@ -52,24 +51,7 @@ def parse_landing_page(url):  # noqa: E501
 
     :rtype: SOMetadata
     """
-    try:
-        date, jsonld, logs = bl.parse_landing_page(url)
-    except Exception as e:  # noqa:  F841
-        if hasattr(e, 'message') and hasattr(e, 'status'):
-            # It looks like a requests/aiohttp exception
-            return e.message, e.status
-
-        # Anything else, return a 400
-        return str(e), 400
-
-    kwargs = {
-        'url': url,
-        'evaluated_date': date,
-        'log': logs,
-        'metadata': jsonld,
-    }
-    so_obj = SOMetadata(**kwargs)
-    return so_obj, 200
+    return 'do some magic!'
 
 
 def parse_robots(url):  # noqa: E501
@@ -82,14 +64,7 @@ def parse_robots(url):  # noqa: E501
 
     :rtype: RobotsFile
     """
-    breakpoint()
-    try:
-        date, sitemaps = bl.parse_robots(url)
-    except Exception as e:
-        return e.response.text, e.response.status_code
-    else:
-        r = RobotsFile(url, sitemaps=sitemaps, evaluated_date=date)
-        return r, 200
+    return 'do some magic!'
 
 
 def parse_sitemap(url, maxlocs=None):  # noqa: E501
@@ -104,19 +79,7 @@ def parse_sitemap(url, maxlocs=None):  # noqa: E501
 
     :rtype: Sitemap
     """
-    try:
-        sitemaps, date, logs, urlset = bl.parse_sitemap(url)
-    except Exception as e:
-        return e.response.text, e.response.status_code
-    else:
-        kwargs = {
-            'sitemaps': sitemaps,
-            'evaluated_date': date,
-            'log': logs,
-            'urlset': urlset,
-        }
-        s = Sitemap(**kwargs)
-        return s, 200
+    return 'do some magic!'
 
 
 def validate_metadata(formatid, body):  # noqa: E501
