@@ -36,5 +36,8 @@ setup(
     include_package_data=True,
     long_description="""\
     Sitemap Checker  # noqa: E501
-    """
+    """,
+    entry_points = {
+        'console_scripts':['willitsync=openapi_client.__main__:main']
+    }
 )
