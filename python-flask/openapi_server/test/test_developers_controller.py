@@ -6,11 +6,8 @@ import io
 import unittest
 
 from flask import json
-import requests_mock
-from six import BytesIO
 
-from openapi_server.models.robots_file import RobotsFile  # noqa: E501
-from openapi_server.test import BaseTestCase
+from openapi_server.models.robots_file import RobotsFile  # noqa: E501, F401
 from .test_core import WillItSyncTestCase
 
 
@@ -28,7 +25,7 @@ class TestDevelopersController(WillItSyncTestCase):
                               'nsanimfraod1michC2.c1.html')
         self.setup_requests_patcher(200, data)
 
-        url = 'https://www.archive.arm.gov/metadata/adc/html/nsanimfraod1michC2.c1.html'
+        url = 'https://www.archive.arm.gov/metadata/adc/html/nsanimfraod1michC2.c1.html'  # noqa : E501
         query_string = [('url', url), ('type', 'Wrong')]
         headers = {
             'Accept': 'application/json',
@@ -56,7 +53,7 @@ class TestDevelopersController(WillItSyncTestCase):
                               'nsanimfraod1michC2.c1.html')
         self.setup_requests_patcher(200, data)
 
-        url = 'https://www.archive.arm.gov/metadata/adc/html/nsanimfraod1michC2.c1.html'
+        url = 'https://www.archive.arm.gov/metadata/adc/html/nsanimfraod1michC2.c1.html'  # noqa : E501
         # query_string = [('url', url), ('type', 'Dataset')]
         query_string = [('url', url)]
         headers = {
@@ -70,7 +67,7 @@ class TestDevelopersController(WillItSyncTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
-        j = json.load(io.BytesIO(response.data))
+        json.load(io.BytesIO(response.data))
         self.assertTrue(True)
 
     def test_parse_robots(self):
@@ -95,17 +92,17 @@ class TestDevelopersController(WillItSyncTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
+        prefix = "https://www.nytimes.com"
         expected = [
-            "https://www.nytimes.com/sitemaps/www.nytimes.com/sitemap.xml.gz",
-            "https://www.nytimes.com/sitemaps/new/news.xml.gz",
-            "https://www.nytimes.com/sitemaps/sitemap_video/sitemap.xml.gz",
-            "https://www.nytimes.com/sitemaps/www.nytimes.com_realestate/sitemap.xml.gz",
-            "https://www.nytimes.com/sitemaps/www.nytimes.com/2016_election_sitemap.xml.gz",
-            "https://www.nytimes.com/elections/2018/sitemap",
+            f"{prefix}/sitemaps/www.nytimes.com/sitemap.xml.gz",
+            f"{prefix}/sitemaps/new/news.xml.gz",
+            f"{prefix}/sitemaps/sitemap_video/sitemap.xml.gz",
+            f"{prefix}/sitemaps/www.nytimes.com_realestate/sitemap.xml.gz",
+            f"{prefix}/sitemaps/www.nytimes.com/2016_election_sitemap.xml.gz",
+            f"{prefix}/elections/2018/sitemap",
         ]
         actual = json.load(io.BytesIO(response.data))
         self.assertEqual(expected, actual['sitemaps'])
-
 
 
 if __name__ == '__main__':

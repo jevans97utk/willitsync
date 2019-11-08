@@ -26,6 +26,7 @@ def get_validate_so(url, type='Dataset'):
     date, jsonld, logs = parse_landing_page(url)
     return date, jsonld, logs
 
+
 def parse_sitemap(url):
     """
     Business logic for using schema_org to process sitemaps.
@@ -61,13 +62,17 @@ def parse_sitemap(url):
 
     return sitemaps, date, logs, urlset
 
+
 def parse_robots(url):
-    """Parses robots.txt to find sitemap(s)
+    """
+    Parses robots.txt to find sitemap(s)
 
     Given a robots.txt file, parse, and retrieve referenced sitemap documents.
 
-    :param url: URL pointing to a robots.txt file
-    :type url: str
+    Parameters
+    ----------
+    url : str
+        URL pointing to a robots.txt file
     """
     date = dt.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
