@@ -58,7 +58,10 @@ class TestDevelopersController(WillItSyncTestCase):
                               'nsanimfraod1michC2.c1.html')
         self.setup_requests_patcher(200, data)
 
-        url = 'https://www.archive.arm.gov/metadata/adc/html/nsanimfraod1michC2.c1.html'  # noqa : E501
+        url = (
+            'https://www.archive.arm.gov'
+            '/metadata/adc/html/nsanimfraod1michC2.c1.html'
+        )
         # query_string = [('url', url), ('type', 'Dataset')]
         query_string = [('url', url)]
         headers = {
@@ -112,8 +115,10 @@ class TestDevelopersController(WillItSyncTestCase):
         # can we dump the metadata?
         json.dumps(data['metadata'])
 
-    def test_parse_langingpage_400(self):
-        """Test case for parse_langingpage where an exception is thrown.
+    def test_parse_landing_page_400(self):
+        """
+        SCENARIO: The SO harvester issues a 400 error when we attempt to
+        extract the JSON-LD from the landing page.
 
         EXPECTED RESULT:  400 error
         """
