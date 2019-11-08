@@ -1,10 +1,31 @@
 # standard library imports
+import logging
 import asyncio
 import datetime as dt
 
 # 3rd party library imports
 import requests
+from extruct.jsonld import JsonLdExtractor
 from schema_org.so_core import SchemaDotOrgHarvester
+from openapi_server.models import log_entry
+
+
+def get_timestamp():
+    return dt.datetime.utcnow() \
+        .replace(tzinfo=dt.timezone.utc) \
+        .isoformat(timespec="milliseconds")
+
+
+def new_log(level, msg):
+    return log_entry.LogEntry(
+        level=level,
+        timestamp=get_timestamp(),
+        msg=msg
+    )
+
+
+def _log(log_list, level, msg):
+    log_list.append(new_log(level, msg))
 
 
 def get_validate_so(url, type='Dataset'):
@@ -49,9 +70,9 @@ def parse_sitemap(url):
         'log_to_stdout': False,
         'no_harvest': True,
         'ignore_harvest_time': True,
-        'sitemap_url': url,
     }
     obj = SchemaDotOrgHarvester(**kwargs)
+    obj.sitemap = url
     asyncio.run(obj.run())
 
     sitemaps = obj.get_sitemaps()
@@ -60,6 +81,7 @@ def parse_sitemap(url):
     logs = obj.extract_log_messages()
 
     return sitemaps, date, logs, urlset
+
 
 def parse_robots(url):
     """Parses robots.txt to find sitemap(s)
