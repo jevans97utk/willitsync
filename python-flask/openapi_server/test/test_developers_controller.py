@@ -74,11 +74,13 @@ class TestDevelopersController(WillItSyncTestCase):
         self.assertTrue(True)
 
     def test_parse_robots(self):
-        """Test case for parse_robots
-
-        Parses robots.txt to find sitemap(s)
         """
-        data = ir.read_binary('openapi_server.test.data', 'robots_nytimes.txt')
+        SCENARIO:  parse a robots.txt file from NYTIMES
+
+        EXPECTED RESPONSE:  200 status code, 6 sitemaps in an array
+        """
+        data = ir.read_binary('openapi_server.test.data.nytimes',
+                              'robots.txt')
         self.setup_requests_patcher(200, data)
 
         query_string = [('url', 'https://nytimes.com/robots.txt')]
@@ -92,6 +94,18 @@ class TestDevelopersController(WillItSyncTestCase):
             query_string=query_string)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
+
+        expected = [
+            "https://www.nytimes.com/sitemaps/www.nytimes.com/sitemap.xml.gz",
+            "https://www.nytimes.com/sitemaps/new/news.xml.gz",
+            "https://www.nytimes.com/sitemaps/sitemap_video/sitemap.xml.gz",
+            "https://www.nytimes.com/sitemaps/www.nytimes.com_realestate/sitemap.xml.gz",
+            "https://www.nytimes.com/sitemaps/www.nytimes.com/2016_election_sitemap.xml.gz",
+            "https://www.nytimes.com/elections/2018/sitemap",
+        ]
+        actual = json.load(io.BytesIO(response.data))
+        self.assertEqual(expected, actual['sitemaps'])
+
 
 
 if __name__ == '__main__':

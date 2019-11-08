@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 import datetime as dt
 import importlib.resources as ir
+import io
 import json
 import unittest
 
@@ -91,11 +92,13 @@ class TestUsersController(WillItSyncTestCase):
                        'Response body is : ' + response.data.decode('utf-8'))
 
     def test_parse_robots(self):
-        """Test case for parse_robots
-
-        Parses robots.txt to find sitemap(s)
         """
-        data = ir.read_binary('openapi_server.test.data', 'robots_nytimes.txt')
+        SCENARIO:  parse a robots.txt file from NYTIMES
+
+        EXPECTED RESPONSE:  200 status code, 6 sitemaps in an array
+        """
+        data = ir.read_binary('openapi_server.test.data.nytimes',
+                              'robots.txt')
         self.setup_requests_patcher(200, data)
 
         query_string = [('url', 'https://nytimes.com/robots.txt')]
@@ -109,6 +112,18 @@ class TestUsersController(WillItSyncTestCase):
             query_string=query_string)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
+
+        prefix = "https://www.nytimes.com"
+        expected = [
+            f"{prefix}/sitemaps/www.nytimes.com/sitemap.xml.gz",
+            f"{prefix}/sitemaps/new/news.xml.gz",
+            f"{prefix}/sitemaps/sitemap_video/sitemap.xml.gz",
+            f"{prefix}/sitemaps/www.nytimes.com_realestate/sitemap.xml.gz",
+            f"{prefix}/sitemaps/www.nytimes.com/2016_election_sitemap.xml.gz",
+            f"{prefix}/elections/2018/sitemap",
+        ]
+        actual = json.load(io.BytesIO(response.data))
+        self.assertEqual(expected, actual['sitemaps'])
 
     def test_parse_robots_400(self):
         """Test case for parse_robots when the robots file does not exist.

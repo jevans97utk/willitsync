@@ -77,7 +77,7 @@ def parse_robots(url):
     sitemaps = []
     for line in r.text.splitlines():
         if 'Sitemap:' in line:
-            sitemaps.append(line.split(': ')[0])
+            sitemaps.append(line.split(': ')[1])
 
     return date, sitemaps
 
