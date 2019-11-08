@@ -80,10 +80,9 @@ class MockSchemaDotOrgHarvester(object):
     def get_log_messages(self):
         if self.logs is None:
             items = [{
-                "name": "root", 
-                "levelname": "WARNING", 
-                "asctime": 
-                "2019-11-08 10:54:02,340", 
+                "name": "root",
+                "levelname": "WARNING",
+                "asctime": "2019-11-08 10:54:02,340",
                 "message": "blah"
             }]
             logs = json.dumps(items)

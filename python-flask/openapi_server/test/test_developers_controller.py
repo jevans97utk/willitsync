@@ -291,6 +291,5 @@ class TestDevelopersController(WillItSyncTestCase):
         self.assertEqual(j['urlset'], expected)
 
 
-
 if __name__ == '__main__':
     unittest.main()

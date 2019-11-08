@@ -8,7 +8,6 @@ from openapi_server.models.sitemap import Sitemap  # noqa: E501
 from openapi_server import util  # noqa : F401
 
 # local imports
-from . import business_logic as bl
 
 
 def get_validate_metadata(url, formatid):  # noqa: E501
