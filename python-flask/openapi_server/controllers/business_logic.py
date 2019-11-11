@@ -80,7 +80,7 @@ def validate_so(body, type_=None):
 
 
 
-def get_validate_so(url, type='Dataset'):
+def get_validate_so(url, type_=None):
     """
     Business logic for using schema_org to parse a landing page.
 
@@ -88,40 +88,49 @@ def get_validate_so(url, type='Dataset'):
     -------
     SOMetadata, HTTP status code
     """
-    # Assume a 200 status code until we know otherwise.
-    return_status = 200
     logobj = CustomJsonLogger()
-
     date = get_current_utc_timestamp()
+    jsonld = None
 
-    obj = SchemaDotOrgHarvester(sitemap_url=url, logger=logobj.logger,
-                                **_KWARGS)
+    if type_ != 'Dataset':
 
-    try:
-        doc = asyncio.run(obj.retrieve_landing_page_content(url))
-        jsonld = obj.get_jsonld(doc)
-        obj.validate_dataone_so_jsonld(jsonld)
-
-    except Exception as e:
-
-        # Log the exception.
-        obj.logger.error(str(e))
-
-        # JSON-LD cannot be retrieved if the landing page cannot be retrieved.
-        jsonld = None
-
-        # Try to get the return status from the exception.  Possibly 400?
-        # Possibly 404?
-        if hasattr(e, 'message') and hasattr(e, 'status'):
-            return_status = e.status
-        else:
-            # Some other exception?
-            return_status = 500
-
-    finally:
-
-        # Always retrieve the logs no matter what.
+        msg = f'Unsupported SO JSON-LD type {type_}.'
+        logobj.logger.error(msg)
         logs = logobj.get_log_messages()
+        return_status = 400
+
+    else:
+
+        obj = SchemaDotOrgHarvester(sitemap_url=url, logger=logobj.logger,
+                                    **_KWARGS)
+
+        try:
+            doc = asyncio.run(obj.retrieve_landing_page_content(url))
+            jsonld = obj.get_jsonld(doc)
+            obj.validate_dataone_so_jsonld(jsonld)
+
+        except Exception as e:
+
+            # Log the exception.
+            obj.logger.error(str(e))
+
+            # JSON-LD cannot be retrieved if the landing page cannot be retrieved.
+            jsonld = None
+
+            # Try to get the return status from the exception.  Possibly 400?
+            # Possibly 404?
+            if hasattr(e, 'message') and hasattr(e, 'status'):
+                return_status = e.status
+            else:
+                # Some other exception?
+                return_status = 500
+
+        else:
+            return_status = 200
+        finally:
+
+            # Always retrieve the logs no matter what.
+            logs = logobj.get_log_messages()
 
     kwargs = {
         'url': url,

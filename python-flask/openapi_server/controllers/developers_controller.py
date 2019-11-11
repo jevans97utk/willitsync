@@ -33,7 +33,7 @@ def get_validate_metadata(url, formatid):  # noqa: E501
     return 'do some magic!'
 
 
-def get_validate_so(url, **kwargs):  # noqa: E501
+def get_validate_so(url, type_=None):  # noqa: E501
     """Retrieve and validate a schema.org JSON-LD document
 
     Given a url referencing a schema.org JSON-LD document, verify that
@@ -51,16 +51,7 @@ def get_validate_so(url, **kwargs):  # noqa: E501
     -------
     SOMetadata
     """
-    type = 'Dataset'
-    for key in kwargs:
-        if 'type' in key:
-            type = kwargs[key]
-
-    # TODO:  fixme
-    if type != 'Dataset':
-        return 'Invalid type parameter', 400
-
-    so_obj, status = bl.get_validate_so(url, type=type)
+    so_obj, status = bl.get_validate_so(url, type_=type_)
     return so_obj, status
 
 

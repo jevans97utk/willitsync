@@ -14,6 +14,7 @@ import dateutil.parser
 
 # Local imports
 from openapi_server.models.robots_file import RobotsFile  # noqa: E501, F401
+from openapi_server.models.so_metadata import SOMetadata
 from .test_core import WillItSyncTestCase
 
 
@@ -25,7 +26,8 @@ class TestDevelopersController(WillItSyncTestCase):
         SCENARIO:  We are given a GET request for a schema.org landing page
         that has valid JSON-LD, but an invalid type argument is given.
 
-        EXPECTED RESULT:  A 400 status code
+        EXPECTED RESULT:  A 400 status code and an SOMetadata object in the
+        reponse body.
         """
         data = ir.read_binary('openapi_server.test.data.arm',
                               'nsanimfraod1michC2.c1.html')
@@ -45,7 +47,10 @@ class TestDevelopersController(WillItSyncTestCase):
         text = response.data.decode('utf-8')
         self.assert400(response, 'Response body is : ' + text)
 
-        self.assertIn('Invalid type parameter', text)
+        # Verify that we can form an SOMetadata object out of the reponse
+        j = json.loads(text)
+        SOMetadata(*j)
+        self.assertTrue(True)
 
     def test_get_validate_so__no_type(self):
         """
