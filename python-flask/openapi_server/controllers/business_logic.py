@@ -26,6 +26,9 @@ _KWARGS = {
 
 
 def get_current_utc_timestamp():
+    """
+    Utility for creating a timestamp that is usable by javascript / JSON.
+    """
     return dt.datetime.utcnow() \
              .replace(tzinfo=dt.timezone.utc) \
              .isoformat(timespec='milliseconds')
@@ -43,7 +46,6 @@ def validate_so(body, **kwargs):
     j = body['metadata']
 
     # Assume a 200 status code until we know otherwise.
-    return_status = 200
     logobj = CustomJsonLogger()
 
     date = get_current_utc_timestamp()
@@ -53,28 +55,15 @@ def validate_so(body, **kwargs):
 
     try:
         obj.validate_dataone_so_jsonld(j)
-
     except Exception as e:
-
         # Log the exception.
         obj.logger.error(str(e))
-
-        # JSON-LD cannot be retrieved if the landing page cannot be retrieved.
-        jsonld = None
-
-        # Try to get the return status from the exception.  Possibly 400?
-        # Possibly 404?
-        if hasattr(e, 'message') and hasattr(e, 'status'):
-            return_status = e.status
-        else:
-            # Some other exception?
-            return_status = 500
-
+        return_status = 400
+    else:
+        return_status = 200
     finally:
-
         # Always retrieve the logs no matter what.
         logs = logobj.get_log_messages()
-
     kwargs = {
         'url': None,
         'evaluated_date': date,
