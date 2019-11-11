@@ -152,7 +152,46 @@ class TestDevelopersController(WillItSyncTestCase):
             data=json.dumps(payload),
             content_type='application/json')
 
-        
+        self.assert400(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+        actual = json.load(io.BytesIO(response.data))
+        self.assertEqual(actual['metadata'], payload['metadata'])
+
+    def test_post_validate__400__invalid_parameter(self):
+        """
+        SCENARIO:  We are given a POST request for a valid schema.org JSON-LD
+        object with an invalid type parameter.
+
+        EXPECTED RESULT:  The schema.org metadata is returned in the body
+        of the response with a 400 status code.
+        """
+        payload = {}
+        payload['url'] = 'http://somewhere.out.there.com'
+        payload['evaluated_date'] = dt.datetime \
+                                      .utcnow() \
+                                      .replace(tzinfo=dt.timezone.utc) \
+                                      .isoformat()
+        payload['log'] = None
+        data = ir.read_binary('openapi_server.test.data.arm',
+                              'nsanimfraod1michC2.c1.invalid.json')
+        metadata = json.load(io.BytesIO(data))
+        payload['metadata'] = metadata
+
+        query_string = [('type_', 'notadataset')]
+
+        headers = {
+            'Accept': 'application/json',
+            'Content-type': 'application/json',
+        }
+        response = self.client.open(
+            '/jevans97utk/willitsync/1.0.2/sovalid',
+            method='POST',
+            headers=headers,
+            data=json.dumps(payload),
+            query_string=query_string,
+            content_type='application/json')
+
         self.assert400(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 

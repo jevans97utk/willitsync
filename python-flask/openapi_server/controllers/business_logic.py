@@ -34,7 +34,7 @@ def get_current_utc_timestamp():
              .isoformat(timespec='milliseconds')
 
 
-def validate_so(body, **kwargs):
+def validate_so(body, type_=None):
     """
     Business logic for validating a (hopefully) dataone Schema.org JSON-LD
     document.
@@ -43,27 +43,31 @@ def validate_so(body, **kwargs):
     -------
     SOMetadata, HTTP status code
     """
+    date = get_current_utc_timestamp()
     j = body['metadata']
 
-    # Assume a 200 status code until we know otherwise.
     logobj = CustomJsonLogger()
 
-    date = get_current_utc_timestamp()
-
-    obj = SchemaDotOrgHarvester(sitemap_url=None, logger=logobj.logger,
-                                **_KWARGS)
-
-    try:
-        obj.validate_dataone_so_jsonld(j)
-    except Exception as e:
-        # Log the exception.
-        obj.logger.error(str(e))
-        return_status = 400
-    else:
-        return_status = 200
-    finally:
-        # Always retrieve the logs no matter what.
+    if type_ != 'Dataset':
+        msg = f'Unsupported SO JSON-LD type {kwargs["_type"]}'
+        logobj.logger.error(msg)
         logs = logobj.get_log_messages()
+    else:
+        obj = SchemaDotOrgHarvester(sitemap_url=None, logger=logobj.logger,
+                                    **_KWARGS)
+
+        try:
+            obj.validate_dataone_so_jsonld(j)
+        except Exception as e:
+            # Log the exception.
+            obj.logger.error(str(e))
+            return_status = 400
+        else:
+            return_status = 200
+        finally:
+            # Always retrieve the logs no matter what.
+            logs = logobj.get_log_messages()
+
     kwargs = {
         'url': None,
         'evaluated_date': date,
