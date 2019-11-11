@@ -1,15 +1,19 @@
 # standard library imports
 import asyncio
 import datetime as dt
+import io
 import json
 import logging
+import time
 
 # 3rd party library imports
 import requests
 from schema_org.so_core import SchemaDotOrgHarvester
+from pythonjsonlogger import jsonlogger
 
 # local imports
 from openapi_server.models.log_entry import LogEntry
+from openapi_server.models.robots_file import RobotsFile
 from openapi_server.models.so_metadata import SOMetadata
 
 
@@ -97,17 +101,32 @@ def parse_robots(url):
     url : str
         URL pointing to a robots.txt file
     """
+    # Setup default values
+    sitemaps = None
+    return_status = 200
+
+    logobj = CustomJsonLogger()
+    logobj.logger.info('parse_robots:...')
+
     date = get_current_utc_timestamp()
 
     r = requests.get(url)
-    r.raise_for_status()
 
-    sitemaps = []
-    for line in r.text.splitlines():
-        if 'Sitemap:' in line:
-            sitemaps.append(line.split(': ')[1])
+    try:
+        r.raise_for_status()
+    except Exception as e:
+        logobj.logger.error(str(e))
+        return_status = r.status_code
+    else:
+        sitemaps = []
+        for line in r.text.splitlines():
+            if 'Sitemap:' in line:
+                sitemaps.append(line.split(': ')[1])
+    finally:
+        log = logobj.get_log_messages()
 
-    return date, sitemaps
+    r = RobotsFile(url, sitemaps=sitemaps, log=log, evaluated_date=date)
+    return r, return_status
 
 
 def parse_landing_page(url):
@@ -196,3 +215,45 @@ def _post_process_logs(logs):
         logs.append(LogEntry(**entry))
 
     return logs
+
+
+class CustomJsonLogger(object):
+    """
+    The SchemaDotOrg harvester has a logger, but we don't use it for all
+    operations, so we use a simplified version here.
+    """
+
+    def __init__(self):
+
+        self.logger = logging.getLogger('dataone')
+        self.logger.setLevel(logging.INFO)
+
+        self.logstrings = io.StringIO()
+        stream = logging.StreamHandler(self.logstrings)
+
+        format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        formatter = jsonlogger.JsonFormatter(format)
+
+        # Use UTC, and fix the millisecond format so that javaScript can use
+        # it
+        formatter.default_msec_format = '%s.%03d'
+        formatter.converter = time.gmtime
+
+        stream.setFormatter(formatter)
+
+        self.logger.addHandler(stream)
+
+    def get_log_messages(self):
+        """
+        If log_to_string was specified as a constructor keyword argument, all
+        the log entries are stored in the "_logstrings" attribute, making them
+        recoverable.
+
+        Returns
+        -------
+        JSON array of log entries
+        """
+        s = self.logstrings.getvalue()
+        log_entries = s.splitlines()
+        s = f"[{','.join(log_entries)}]"
+        return s

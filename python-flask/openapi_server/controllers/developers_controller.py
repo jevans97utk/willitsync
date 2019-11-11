@@ -37,7 +37,8 @@ def get_validate_so(url, **kwargs):  # noqa: E501
     """Retrieve and validate a schema.org JSON-LD document
 
     Given a url referencing a schema.org JSON-LD document, verify that
-    the structure matches expected model indicated in the type parameter.
+    the structure matches expected model indicated in the type parameter.  This
+    corresponds to the /sovalid endpoint.
 
     Parameters
     ----------
@@ -87,13 +88,8 @@ def parse_robots(url):
 
     :rtype: RobotsFile
     """
-    try:
-        date, sitemaps = bl.parse_robots(url)
-    except Exception as e:
-        return e.response.text, e.response.status_code
-    else:
-        r = RobotsFile(url, sitemaps=sitemaps, evaluated_date=date)
-        return r, 200
+    robots_file, status = bl.parse_robots(url)
+    return robots_file, status
 
 
 def parse_sitemap(url, maxlocs=None):  # noqa: E501
