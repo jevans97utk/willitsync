@@ -76,9 +76,11 @@ def parse_langingpage(url):  # noqa: E501
 
 
 def parse_robots(url):
-    """Parses robots.txt to find sitemap(s)
+    """
+    Parses robots.txt to find sitemap(s).  This corresponds to the /robots
+    endpoint.
 
-    Given a robots.txt file, parse, and retrieve referenced sitemap documents.  # noqa: E501
+    Given a robots.txt file, parse, and retrieve referenced sitemap documents.
 
     :param url: URL pointing to a robots.txt file
     :type url: str
