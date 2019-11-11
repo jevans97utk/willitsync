@@ -95,15 +95,21 @@ def parse_robots(url):
 def parse_sitemap(url, maxlocs=None):  # noqa: E501
     """Parses sitemap.xml
 
-    Parses a sitemap to retrieve entries. # noqa: E501
+    Parses a sitemap to retrieve entries.
 
-    :param url: URL pointing to a sitemap xml document.
-    :type url: str
-    :param maxlocs: Maximum number of sitemap locations to return (100)
-    :type maxlocs: int
+    Parameters
+    ----------
+    url : str
+        URL pointing to a sitemap xml document.
+    maxlocs : int
+        Maximum number of sitemap locations to return (100)
 
-    :rtype: Sitemap
+    Returns
+    -------
+    Sitemap, HTTP status code
     """
+    sitemap, status_code = bl.parse_sitemap(url, maxlocs=maxlocs)
+    return sitemap, status_code
 
     try:
         sitemaps, date, logs, urlset = bl.parse_sitemap(url)

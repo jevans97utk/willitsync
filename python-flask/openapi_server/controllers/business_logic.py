@@ -14,14 +14,12 @@ from pythonjsonlogger import jsonlogger
 # local imports
 from openapi_server.models.log_entry import LogEntry
 from openapi_server.models.robots_file import RobotsFile
+from openapi_server.models.sitemap import Sitemap
 from openapi_server.models.so_metadata import SOMetadata
 
 
 # Common keyword arguments to always be fed to the SchemaDotOrg processor.
 _KWARGS = {
-    'log_to_string': True,
-    'log_to_stdout': False,
-    'log_to_json': True,
     'no_harvest': True,
     'ignore_harvest_time': True,
 }
@@ -57,7 +55,7 @@ def get_validate_so(url, type='Dataset'):
     return so_obj, status
 
 
-def parse_sitemap(url):
+def parse_sitemap(url, maxlocs=None):
     """
     Business logic for using schema_org to process sitemaps.
 
@@ -79,15 +77,24 @@ def parse_sitemap(url):
         time of the landing page
     """
     date = get_current_utc_timestamp()
+    logobj = CustomJsonLogger()
 
-    obj = SchemaDotOrgHarvester(sitemap_url=url, **_KWARGS)
+    obj = SchemaDotOrgHarvester(sitemap_url=url, logger=logobj.logger,
+                                **_KWARGS)
     asyncio.run(obj.run())
 
     sitemaps = obj.get_sitemaps()
     urlset = obj.get_sitemaps_urlset()
-    logs = obj.get_log_messages()
+    logs = logobj.get_log_messages()
 
-    return sitemaps, date, logs, urlset
+    kwargs = {
+        'sitemaps': sitemaps,
+        'evaluated_date': date,
+        'log': logs,
+        'urlset': urlset,
+    }
+    s = Sitemap(**kwargs)
+    return s, 200
 
 
 def parse_robots(url):
@@ -139,10 +146,12 @@ def parse_landing_page(url):
     """
     # Assume a 200 status code until we know otherwise.
     return_status = 200
+    logobj = CustomJsonLogger()
 
     date = get_current_utc_timestamp()
 
-    obj = SchemaDotOrgHarvester(sitemap_url=url, **_KWARGS)
+    obj = SchemaDotOrgHarvester(sitemap_url=url, logger=logobj.logger,
+                                **_KWARGS)
 
     try:
         doc = asyncio.run(obj.retrieve_landing_page_content(url))
@@ -164,11 +173,13 @@ def parse_landing_page(url):
             return_status = 500
 
     else:
+
         jsonld = obj.get_jsonld(doc)
+
     finally:
+
         # Always retrieve the logs no matter what.
-        logs = obj.get_log_messages()
-        logs = _post_process_logs(logs)
+        logs = logobj.get_log_messages()
 
     kwargs = {
         'url': url,
@@ -179,42 +190,6 @@ def parse_landing_page(url):
     so_metadata = SOMetadata(**kwargs)
 
     return so_metadata, return_status
-
-
-def _post_process_logs(logs):
-    """
-    Put the already-JSON-formatted log entries into the expected form.
-
-    Parameters
-    ----------
-    logs : str
-        Single string of log entries.
-
-    Returns
-    -------
-    array of LogEntry objects
-    """
-    log_items = json.loads(logs)
-
-    logs = []
-    for entry in log_items:
-
-        # "msg" instead of "message"
-        entry['msg'] = entry.pop('message')
-
-        # "level" is an int
-        entry['level'] = getattr(logging, entry.pop('levelname'))
-
-        # "timestamp" instead of "asctime" with Z tacked onto the end to
-        # designate UTC.
-        entry['timestamp'] = f"{entry.pop('asctime')}Z"
-
-        # Get rid of the name of the logger.
-        entry.pop('name')
-
-        logs.append(LogEntry(**entry))
-
-    return logs
 
 
 class CustomJsonLogger(object):
@@ -254,6 +229,32 @@ class CustomJsonLogger(object):
         JSON array of log entries
         """
         s = self.logstrings.getvalue()
+
+        # Right now it is single string whose log entries are
+        # newline-terminated.  Change that to
+        # comma-and-then-newline-terminated.
         log_entries = s.splitlines()
         s = f"[{','.join(log_entries)}]"
-        return s
+
+        # Turn into actual JSON and massage into the proper form.
+        log_items = json.loads(s)
+
+        logs = []
+        for entry in log_items:
+
+            # "msg" instead of "message"
+            entry['msg'] = entry.pop('message')
+
+            # "level" is an int
+            entry['level'] = getattr(logging, entry.pop('levelname'))
+
+            # "timestamp" instead of "asctime" with Z tacked onto the end to
+            # designate UTC.
+            entry['timestamp'] = f"{entry.pop('asctime')}Z"
+
+            # Get rid of the name of the logger.
+            entry.pop('name')
+
+            logs.append(LogEntry(**entry))
+
+        return logs
