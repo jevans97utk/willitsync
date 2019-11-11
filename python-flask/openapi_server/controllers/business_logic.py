@@ -80,7 +80,7 @@ def parse_sitemap(url, maxlocs=None):
     logobj = CustomJsonLogger()
 
     obj = SchemaDotOrgHarvester(sitemap_url=url, logger=logobj.logger,
-                                **_KWARGS)
+                                num_documents=maxlocs, **_KWARGS)
     asyncio.run(obj.run())
 
     sitemaps = obj.get_sitemaps()
