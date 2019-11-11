@@ -13,13 +13,53 @@ from aioresponses import aioresponses
 import dateutil.parser
 
 # Local imports
-from openapi_server.models.robots_file import RobotsFile  # noqa: E501, F401
+from openapi_server.models.robots_file import RobotsFile
+from openapi_server.models.sci_metadata import SCIMetadata
 from openapi_server.models.so_metadata import SOMetadata
 from .test_core import WillItSyncTestCase
 
 
 class TestDevelopersController(WillItSyncTestCase):
     """DevelopersController integration test stubs"""
+
+    def test_get_validate_metadata(self):
+        """
+        SCENARIO:  We are given a valid URL leading to a valid metadata
+        document, along with aa valid formatID.
+
+        EXPECTED RESULT:  A 200 status code.  We can load the response body
+        into a SCIMetadata object.
+        """
+        url = 'https://www.archive.arm.gov/metadata/adc/html/nsaqcrad1longC2.c2.xml'  # noqa : E501
+
+        content = ir.read_binary('openapi_server.test.data.arm',
+                                 'nsaqcrad1longC2.c2.xml')
+
+        query_string = [
+            ('url', url),
+            ('formatid', 'http://www.isotc211.org/2005/gmd')
+        ]
+
+        headers = {
+            'Accept': 'application/json',
+        }
+
+        with aioresponses() as m:
+            m.get(url, body=content, status=200)
+
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/scivalid',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+        text = response.data.decode('utf-8')
+        self.assert200(response, 'Response body is : ' + text)
+
+        # Verify that we can form an SOMetadata object out of the reponse
+        j = json.loads(text)
+        SCIMetadata(*j)
+        self.assertTrue(True)
 
     def test_get_validate_so__bad_type(self):
         """

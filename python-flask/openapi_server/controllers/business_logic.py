@@ -7,14 +7,17 @@ import logging
 import time
 
 # 3rd party library imports
+import lxml.etree
 import requests
 from schema_org.so_core import SchemaDotOrgHarvester
 from pythonjsonlogger import jsonlogger
+import d1_scimeta.validate
 
 # local imports
 from openapi_server.models.log_entry import LogEntry
 from openapi_server.models.robots_file import RobotsFile
 from openapi_server.models.sitemap import Sitemap
+from openapi_server.models.sci_metadata import SCIMetadata
 from openapi_server.models.so_metadata import SOMetadata
 
 
@@ -32,6 +35,52 @@ def get_current_utc_timestamp():
     return dt.datetime.utcnow() \
              .replace(tzinfo=dt.timezone.utc) \
              .isoformat(timespec='milliseconds')
+
+
+def get_validate_metadata(url, formatid):
+    """Retrieve and validate a science metadata XML document
+
+    Given a url referencing an XML metadata document, retrieve and validate the
+    XML.  This corresponds to the /scimeta GET endpoint.
+
+    Parameters
+    ----------
+    url : str
+        URL referencing a science metadata XML document to retrieve and
+        validate.
+    formatid : str
+        The DataONE formatId of the XML to test for validity.
+
+    Returns
+    -------
+    SCIMetadata, HTTP status_code
+    """
+    date = get_current_utc_timestamp()
+    logobj = CustomJsonLogger()
+
+    obj = SchemaDotOrgHarvester(logger=logobj.logger, **_KWARGS)
+    
+    try:
+        content = asyncio.run(obj.retrieve_url(url))
+        doc = lxml.etree.parse(io.BytesIO(content))
+        d1_scimeta.validate.assert_valid(formatid, doc)
+    except Exception as e:
+        pass
+    else:
+        return_status = 200
+    finally:
+        # Always retrieve the logs no matter what.
+        logs = logobj.get_log_messages()
+    
+    kwargs = {
+        'url': url,
+        'evaluated_date': date,
+        'log': logs,
+        'metadata': lxml.etree.tostring(doc).decode('utf-8')
+    }
+    scimetadata = SCIMetadata(**kwargs)
+    return scimetadata, return_status
+
 
 
 def validate_so(body, type_=None):

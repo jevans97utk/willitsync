@@ -16,7 +16,7 @@ def get_validate_metadata(url, formatid):  # noqa: E501
     """Retrieve and validate a science metadata XML document
 
     Given a url referencing an XML metadata document, retrieve and validate the
-    XML.
+    XML.  This corresponds to the /scimeta GET endpoint.
 
     Parameters
     ----------
@@ -30,7 +30,7 @@ def get_validate_metadata(url, formatid):  # noqa: E501
     -------
     SCIMetadata
     """
-    return 'do some magic!'
+    return bl.get_validate_metadata(url, formatid)
 
 
 def get_validate_so(url, type_=None):  # noqa: E501
@@ -51,8 +51,7 @@ def get_validate_so(url, type_=None):  # noqa: E501
     -------
     SOMetadata
     """
-    so_obj, status = bl.get_validate_so(url, type_=type_)
-    return so_obj, status
+    return bl.get_validate_so(url, type_=type_)
 
 
 def parse_langingpage(url):  # noqa: E501
