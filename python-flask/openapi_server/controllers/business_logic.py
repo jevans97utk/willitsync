@@ -60,27 +60,55 @@ def get_validate_metadata(url, formatid):
 
     obj = SchemaDotOrgHarvester(logger=logobj.logger, **_KWARGS)
     
-    try:
-        content = asyncio.run(obj.retrieve_url(url))
-        doc = lxml.etree.parse(io.BytesIO(content))
-        d1_scimeta.validate.assert_valid(formatid, doc)
-    except Exception as e:
-        pass
-    else:
-        return_status = 200
-    finally:
-        # Always retrieve the logs no matter what.
-        logs = logobj.get_log_messages()
-    
     kwargs = {
         'url': url,
         'evaluated_date': date,
-        'log': logs,
-        'metadata': lxml.etree.tostring(doc).decode('utf-8')
+        'log': None,
+        'metadata': None,
     }
-    scimetadata = SCIMetadata(**kwargs)
-    return scimetadata, return_status
+    # Try to get the document
+    try:
+        content = asyncio.run(obj.retrieve_url(url))
+    except Exception as e:
 
+        logobj.logger.error(str(e))
+        logs = logobj.get_log_messages()
+
+        kwargs['log'] = logs
+        scimetadata = SCIMetadata(**kwargs)
+
+        # The error status is most likely a 404?
+        if hasattr(e, 'message') and hasattr(e, 'status'):
+            return_status = 404
+        else:
+            return_status = 400
+        return scimetadata, return_status
+
+    # Decode the document.
+    try:
+        doc = lxml.etree.parse(io.BytesIO(content))
+    except Exception as e:
+        logobj.logger.error(str(e))
+        logs = logobj.get_log_messages()
+        kwargs['log'] = logs
+        scimetadata = SCIMetadata(**kwargs)
+        return scimetadata, 400
+    else:
+        # So we know we have a valid XML document now.
+        kwargs['metadata'] = lxml.etree.tostring(doc).decode('utf-8')
+
+    # And finally, validate.
+    try:
+        d1_scimeta.validate.assert_valid(formatid, doc)
+    except Exception as e:
+        logobj.logger.error(str(e))
+        return_status = 400
+    finally:
+        kwargs['log'] = logobj.get_log_messages()
+        scimetadata = SCIMetadata(**kwargs)
+        return_status = 200
+        return scimetadata, return_status
+    
 
 
 def validate_so(body, type_=None):
