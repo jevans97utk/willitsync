@@ -103,20 +103,6 @@ def parse_sitemap(url, maxlocs=None):  # noqa: E501
     sitemap, status_code = bl.parse_sitemap(url, maxlocs=maxlocs)
     return sitemap, status_code
 
-    try:
-        sitemaps, date, logs, urlset = bl.parse_sitemap(url)
-    except Exception as e:
-        return e.response.text, e.response.status_code
-    else:
-        kwargs = {
-            'sitemaps': sitemaps,
-            'evaluated_date': date,
-            'log': logs,
-            'urlset': urlset,
-        }
-        s = Sitemap(**kwargs)
-        return s, 200
-
 
 def validate_metadata(formatid, body):
     """Validate provided schema.org JSON-LD document
