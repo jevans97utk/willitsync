@@ -281,6 +281,9 @@ class CustomJsonLogger(object):
         Go thru the list of log entries.  If any of the 'levelname' values
         are ERROR, set the return status to 400.
         """
+        if self._json_formatted_log_items is None:
+            self.post_process()
+
         # Assume all is ok until we know otherwise.
         return_status = 200
 
