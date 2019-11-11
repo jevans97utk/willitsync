@@ -85,7 +85,9 @@ def parse_sitemap(url, maxlocs=None):
 
     sitemaps = obj.get_sitemaps()
     urlset = obj.get_sitemaps_urlset()
+
     logs = logobj.get_log_messages()
+    return_status = logobj.get_return_status()
 
     kwargs = {
         'sitemaps': sitemaps,
@@ -94,7 +96,7 @@ def parse_sitemap(url, maxlocs=None):
         'urlset': urlset,
     }
     s = Sitemap(**kwargs)
-    return s, 200
+    return s, return_status
 
 
 def parse_robots(url):
@@ -200,6 +202,8 @@ class CustomJsonLogger(object):
 
     def __init__(self):
 
+        self._json_formatted_log_items = None
+
         self.logger = logging.getLogger('dataone')
         self.logger.setLevel(logging.INFO)
 
@@ -218,7 +222,7 @@ class CustomJsonLogger(object):
 
         self.logger.addHandler(stream)
 
-    def get_log_messages(self):
+    def post_process(self):
         """
         If log_to_string was specified as a constructor keyword argument, all
         the log entries are stored in the "_logstrings" attribute, making them
@@ -237,10 +241,23 @@ class CustomJsonLogger(object):
         s = f"[{','.join(log_entries)}]"
 
         # Turn into actual JSON and massage into the proper form.
-        log_items = json.loads(s)
+        self._json_formatted_log_items = json.loads(s)
+
+    def get_log_messages(self):
+        """
+        If log_to_string was specified as a constructor keyword argument, all
+        the log entries are stored in the "_logstrings" attribute, making them
+        recoverable.
+
+        Returns
+        -------
+        JSON array of log entries
+        """
+        if self._json_formatted_log_items is None:
+            self.post_process()
 
         logs = []
-        for entry in log_items:
+        for entry in self._json_formatted_log_items:
 
             # "msg" instead of "message"
             entry['msg'] = entry.pop('message')
@@ -258,3 +275,16 @@ class CustomJsonLogger(object):
             logs.append(LogEntry(**entry))
 
         return logs
+
+    def get_return_status(self):
+        """
+        Go thru the list of log entries.  If any of the 'levelname' values
+        are ERROR, set the return status to 400.
+        """
+        # Assume all is ok until we know otherwise.
+        return_status = 200
+
+        for log_entry in self._json_formatted_log_items:
+            if log_entry['levelname'] == 'ERROR':
+                return_status = 400
+        return return_status
