@@ -31,6 +31,62 @@ def get_current_utc_timestamp():
              .isoformat(timespec='milliseconds')
 
 
+def validate_so(body, **kwargs):
+    """
+    Business logic for validating a (hopefully) dataone Schema.org JSON-LD
+    document.
+
+    Returns
+    -------
+    SOMetadata, HTTP status code
+    """
+    j = body['metadata']
+
+    # Assume a 200 status code until we know otherwise.
+    return_status = 200
+    logobj = CustomJsonLogger()
+
+    date = get_current_utc_timestamp()
+
+    obj = SchemaDotOrgHarvester(sitemap_url=None, logger=logobj.logger,
+                                **_KWARGS)
+
+    try:
+        obj.validate_dataone_so_jsonld(j)
+
+    except Exception as e:
+
+        # Log the exception.
+        obj.logger.error(str(e))
+
+        # JSON-LD cannot be retrieved if the landing page cannot be retrieved.
+        jsonld = None
+
+        # Try to get the return status from the exception.  Possibly 400?
+        # Possibly 404?
+        if hasattr(e, 'message') and hasattr(e, 'status'):
+            return_status = e.status
+        else:
+            # Some other exception?
+            return_status = 500
+
+    finally:
+
+        # Always retrieve the logs no matter what.
+        logs = logobj.get_log_messages()
+
+    kwargs = {
+        'url': None,
+        'evaluated_date': date,
+        'log': logs,
+        'metadata': j,
+    }
+    so_metadata = SOMetadata(**kwargs)
+
+    return so_metadata, return_status
+
+
+
 def get_validate_so(url, type='Dataset'):
     """
     Business logic for using schema_org to parse a landing page.

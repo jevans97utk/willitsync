@@ -47,38 +47,6 @@ class TestDevelopersController(WillItSyncTestCase):
 
         self.assertIn('Invalid type parameter', text)
 
-    @unittest.skip('not implemented yet')
-    def test_get_validate_so__type_is_wrong(self):
-        """
-        SCENARIO:  We are given a GET request for a schema.org landing page
-        that has valid JSON-LD.  No type argument is given.
-
-        EXPECTED RESULT:  The schema.org metadata is returned in the body
-        of the response with a 200 status code.
-        """
-        data = ir.read_binary('openapi_server.test.data.arm',
-                              'nsanimfraod1michC2.c1.html')
-        self.setup_requests_patcher(200, data)
-
-        url = (
-            'https://www.archive.arm.gov'
-            '/metadata/adc/html/nsanimfraod1michC2.c1.html'
-        )
-        query_string = [('url', url), ('type', 'something_bad')]
-        headers = {
-            'Accept': 'application/json',
-        }
-        response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/sovalid',
-            method='GET',
-            headers=headers,
-            query_string=query_string)
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
-
-        json.load(io.BytesIO(response.data))
-        self.assertTrue(True)
-
     def test_get_validate_so__no_type(self):
         """
         SCENARIO:  We are given a GET request for a schema.org landing page
@@ -110,6 +78,46 @@ class TestDevelopersController(WillItSyncTestCase):
 
         json.load(io.BytesIO(response.data))
         self.assertTrue(True)
+
+    def test_post_validate(self):
+        """
+        SCENARIO:  We are given a POST request for a valid schema.org JSON-LD
+        object.
+
+        EXPECTED RESULT:  The schema.org metadata is returned in the body
+        of the response with a 200 status code.
+        """
+        payload = {}
+        payload['url'] = 'http://somewhere.out.there.com'
+        payload['evaluated_date'] = dt.datetime \
+                                      .utcnow() \
+                                      .replace(tzinfo=dt.timezone.utc) \
+                                      .isoformat()
+        payload['log'] = None
+        data = ir.read_binary('openapi_server.test.data.arm',
+                              'nsanimfraod1michC2.c1.json')
+        metadata = json.load(io.BytesIO(data))
+        payload['metadata'] = metadata
+
+        self.setup_requests_patcher(200, data)
+
+        headers = {
+            'Accept': 'application/json',
+            'Content-type': 'application/json',
+        }
+        response = self.client.open(
+            '/jevans97utk/willitsync/1.0.2/sovalid',
+            method='POST',
+            headers=headers,
+            data=json.dumps(payload),
+            content_type='application/json')
+
+        
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+        actual = json.load(io.BytesIO(response.data))
+        self.assertEqual(actual['metadata'], payload['metadata'])
 
     def test_parse_landing_page(self):
         """

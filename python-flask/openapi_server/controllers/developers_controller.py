@@ -56,11 +56,12 @@ def get_validate_so(url, **kwargs):  # noqa: E501
         if 'type' in key:
             type = kwargs[key]
 
+    # TODO:  fixme
     if type != 'Dataset':
         return 'Invalid type parameter', 400
 
     so_obj, status = bl.get_validate_so(url, type=type)
-    return so_obj, 200
+    return so_obj, status
 
 
 def parse_langingpage(url):  # noqa: E501
@@ -141,7 +142,7 @@ def validate_metadata(formatid, body):
     return 'do some magic!'
 
 
-def validate_so(body, type=None):  # noqa: E501
+def validate_so(body, type_=None):  # noqa: E501
     """Validate provided schema.org JSON-LD document
 
     Given a schema.org JSON-LD document, verify that the structure
@@ -154,4 +155,4 @@ def validate_so(body, type=None):  # noqa: E501
 
     :rtype: SOMetadata
     """
-    return 'do some magic!'
+    return bl.validate_so(body, type_=type_)
