@@ -47,6 +47,38 @@ class TestDevelopersController(WillItSyncTestCase):
 
         self.assertIn('Invalid type parameter', text)
 
+    @unittest.skip('not implemented yet')
+    def test_get_validate_so__type_is_wrong(self):
+        """
+        SCENARIO:  We are given a GET request for a schema.org landing page
+        that has valid JSON-LD.  No type argument is given.
+
+        EXPECTED RESULT:  The schema.org metadata is returned in the body
+        of the response with a 200 status code.
+        """
+        data = ir.read_binary('openapi_server.test.data.arm',
+                              'nsanimfraod1michC2.c1.html')
+        self.setup_requests_patcher(200, data)
+
+        url = (
+            'https://www.archive.arm.gov'
+            '/metadata/adc/html/nsanimfraod1michC2.c1.html'
+        )
+        query_string = [('url', url), ('type', 'something_bad')]
+        headers = {
+            'Accept': 'application/json',
+        }
+        response = self.client.open(
+            '/jevans97utk/willitsync/1.0.2/sovalid',
+            method='GET',
+            headers=headers,
+            query_string=query_string)
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+        json.load(io.BytesIO(response.data))
+        self.assertTrue(True)
+
     def test_get_validate_so__no_type(self):
         """
         SCENARIO:  We are given a GET request for a schema.org landing page

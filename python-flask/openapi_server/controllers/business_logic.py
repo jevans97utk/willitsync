@@ -33,26 +33,56 @@ def get_current_utc_timestamp():
 
 def get_validate_so(url, type='Dataset'):
     """
-    Business logic for using schema.org to validate a landing page.
-
-    Returns
-    -------
-    sitemaps
-        list of all sitemap URLs on the web site
-    date
-        datetime of this request
-    logs
-        list of log entries for this operation
-    urlset
-        list of tuples consisting of a landing page URL and the last modified
-        time of the landing page
+    Business logic for using schema_org to parse a landing page.
 
     Returns
     -------
     SOMetadata, HTTP status code
     """
-    so_obj, status = parse_landing_page(url)
-    return so_obj, status
+    # Assume a 200 status code until we know otherwise.
+    return_status = 200
+    logobj = CustomJsonLogger()
+
+    date = get_current_utc_timestamp()
+
+    obj = SchemaDotOrgHarvester(sitemap_url=url, logger=logobj.logger,
+                                **_KWARGS)
+
+    try:
+        doc = asyncio.run(obj.retrieve_landing_page_content(url))
+        jsonld = obj.get_jsonld(doc)
+        obj.validate_dataone_so_jsonld(jsonld)
+
+    except Exception as e:
+
+        # Log the exception.
+        obj.logger.error(str(e))
+
+        # JSON-LD cannot be retrieved if the landing page cannot be retrieved.
+        jsonld = None
+
+        # Try to get the return status from the exception.  Possibly 400?
+        # Possibly 404?
+        if hasattr(e, 'message') and hasattr(e, 'status'):
+            return_status = e.status
+        else:
+            # Some other exception?
+            return_status = 500
+
+    finally:
+
+        # Always retrieve the logs no matter what.
+        logs = logobj.get_log_messages()
+
+    kwargs = {
+        'url': url,
+        'evaluated_date': date,
+        'log': logs,
+        'metadata': jsonld,
+    }
+    so_metadata = SOMetadata(**kwargs)
+
+    return so_metadata, return_status
 
 
 def parse_sitemap(url, maxlocs=None):
