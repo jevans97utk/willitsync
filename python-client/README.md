@@ -68,6 +68,10 @@ except ApiException as e:
 
 ```
 
+## Documentation for Command line
+
+- [LogEntry](docs/main.md)
+
 ## Documentation for API Endpoints
 
 All URIs are relative to *https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.2*
@@ -106,6 +110,6 @@ Class | Method | HTTP request | Description
 
 ## Author
 
-jevans97@utk.edu
+Dave Vieglais
 
 
