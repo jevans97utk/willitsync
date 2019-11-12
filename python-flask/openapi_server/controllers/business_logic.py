@@ -110,7 +110,7 @@ def get_validate_metadata(url, formatid):
 def validate_so(body, type_=None):
     """
     Business logic for validating a (hopefully) dataone Schema.org JSON-LD
-    document.
+    document for /sovalid POST
 
     Parameters
     ----------
@@ -132,6 +132,7 @@ def validate_so(body, type_=None):
         msg = f"Unsupported SO JSON-LD type \"{type_}\""
         logobj.logger.error(msg)
         logs = logobj.get_log_messages()
+        return_status = 400
     else:
         obj = SchemaDotOrgHarvester(sitemap_url=None, logger=logobj.logger,
                                     **_KWARGS)

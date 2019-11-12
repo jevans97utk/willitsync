@@ -366,6 +366,48 @@ class TestDevelopersController(WillItSyncTestCase):
         actual = json.load(io.BytesIO(response.data))
         self.assertEqual(actual['metadata'], payload['metadata'])
 
+    def test_post_validate__type_is_bad(self):
+        """
+        SCENARIO:  We are given a POST request for a valid schema.org JSON-LD
+        object, but the type parameter is bad.
+
+        EXPECTED RESULT:  The schema.org metadata is returned in the body
+        of the response with a 400 status code.
+        """
+        payload = {}
+        payload['url'] = 'http://somewhere.out.there.com'
+        payload['evaluated_date'] = dt.datetime \
+                                      .utcnow() \
+                                      .replace(tzinfo=dt.timezone.utc) \
+                                      .isoformat()
+        payload['log'] = None
+        data = ir.read_binary('openapi_server.test.data.arm',
+                              'nsanimfraod1michC2.c1.json')
+        metadata = json.load(io.BytesIO(data))
+        payload['metadata'] = metadata
+
+        self.setup_requests_patcher(200, data)
+
+        headers = {
+            'Accept': 'application/json',
+            'Content-type': 'application/json',
+        }
+        query_string = [('type', 'Wrong')]
+        response = self.client.open(
+            '/jevans97utk/willitsync/1.0.2/sovalid',
+            method='POST',
+            headers=headers,
+            data=json.dumps(payload),
+            query_string=query_string,
+            content_type='application/json')
+
+        
+        self.assert400(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+        actual = json.load(io.BytesIO(response.data))
+        self.assertEqual(actual['metadata'], payload['metadata'])
+
     def test_post_validate__content_not_json__400(self):
         """
         SCENARIO:  We are given a POST request with a body that is not JSON.
