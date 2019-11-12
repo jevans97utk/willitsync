@@ -162,7 +162,8 @@ def validate_so(body, type_=None):
 
 def get_validate_so(url, type_=None):
     """
-    Business logic for using schema_org to parse a landing page.
+    Business logic for using schema_org to valid SO JSON-LD from either a
+    landing page or as a standalone document.  GET /sovalid.
 
     Returns
     -------
@@ -194,8 +195,27 @@ def get_validate_so(url, type_=None):
 
     # Ok, so try to retrieve the document.
     try:
-
         content, headers = asyncio.run(obj.retrieve_url(url))
+    except Exception as e:
+
+        # Log the exception.
+        obj.logger.error(str(e))
+
+        # Always retrieve the logs no matter what.
+        logs = logobj.get_log_messages()
+
+        kwargs = {
+            'url': url,
+            'evaluated_date': date,
+            'log': logs,
+            'metadata': jsonld,
+        }
+        so_metadata = SOMetadata(**kwargs)
+
+        return so_metadata, 404
+
+    # And finally, parse and validate the document
+    try:
         if 'text/html' in headers['Content-Type']:
             # It's a landing page.
             doc = lxml.etree.HTML(content)
@@ -203,33 +223,13 @@ def get_validate_so(url, type_=None):
         elif headers['Content-Type'] == 'application/json':
             # It's a JSON-LD document.
             jsonld = json.load(io.BytesIO(content))
-
         obj.validate_dataone_so_jsonld(jsonld)
-
-    except JsonLdError as e:
-        # Log the exception.
-        obj.logger.error(str(e))
-
-        # Bad JSON-LD is a problem on the part of the user.
-        return_status = 400
-
     except Exception as e:
-
-        # Log the exception.
         obj.logger.error(str(e))
-
-        # Try to get the return status from the exception.  Possibly 400?
-        # Possibly 404?
-        if hasattr(e, 'message') and hasattr(e, 'status'):
-            return_status = e.status
-        else:
-            # Some other exception?
-            return_status = 500
-
+        return_status = 400
     else:
         return_status = 200
     finally:
-
         # Always retrieve the logs no matter what.
         logs = logobj.get_log_messages()
 

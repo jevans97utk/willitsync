@@ -101,7 +101,7 @@ class TestDevelopersController(WillItSyncTestCase):
         SCIMetadata(*j)
         self.assertTrue(True)
 
-    def test_get_validate_metadata__invalid_xml__404(self):
+    def test_get_validate_metadata__invalid_xml__400(self):
         """
         SCENARIO:  We are given a valid URL for an invalid XML metadata
         document.
@@ -246,6 +246,40 @@ class TestDevelopersController(WillItSyncTestCase):
                 query_string=query_string)
 
         self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+        json.load(io.BytesIO(response.data))
+        self.assertTrue(True)
+
+    def test_get_validate_so__json__404(self):
+        """
+        SCENARIO:  We are given a GET request for a schema.org JSON-LD
+        document that is not present.  No type is given.
+
+        EXPECTED RESULT:   404 status code.
+        """
+        data = ir.read_binary('openapi_server.test.data.arm',
+                              'nsanimfraod1michC2.c1.json')
+
+        url = (
+            'https://www.archive.arm.gov'
+            '/metadata/adc/json/nsanimfraod1michC2.c1.json'
+        )
+        query_string = [('url', url)]
+        headers = {
+            'Accept': 'application/json',
+        }
+
+        with aioresponses() as m:
+            m.get(url, body=data, status=404)
+
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/sovalid',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+        self.assert404(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
         json.load(io.BytesIO(response.data))
