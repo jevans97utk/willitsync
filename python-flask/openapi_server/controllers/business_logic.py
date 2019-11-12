@@ -59,7 +59,7 @@ def get_validate_metadata(url, formatid):
     logobj = CustomJsonLogger()
 
     obj = SchemaDotOrgHarvester(logger=logobj.logger, **_KWARGS)
-    
+
     kwargs = {
         'url': url,
         'evaluated_date': date,
@@ -108,7 +108,6 @@ def get_validate_metadata(url, formatid):
         scimetadata = SCIMetadata(**kwargs)
         return_status = 200
         return scimetadata, return_status
-    
 
 
 def validate_so(body, type_=None):
@@ -126,7 +125,7 @@ def validate_so(body, type_=None):
     logobj = CustomJsonLogger()
 
     if type_ != 'Dataset':
-        msg = f'Unsupported SO JSON-LD type {kwargs["_type"]}'
+        msg = f"Unsupported SO JSON-LD type \"{type_}\""
         logobj.logger.error(msg)
         logs = logobj.get_log_messages()
     else:
@@ -154,7 +153,6 @@ def validate_so(body, type_=None):
     so_metadata = SOMetadata(**kwargs)
 
     return so_metadata, return_status
-
 
 
 def get_validate_so(url, type_=None):
@@ -191,7 +189,8 @@ def get_validate_so(url, type_=None):
             # Log the exception.
             obj.logger.error(str(e))
 
-            # JSON-LD cannot be retrieved if the landing page cannot be retrieved.
+            # JSON-LD cannot be retrieved if the landing page cannot be
+            # retrieved.
             jsonld = None
 
             # Try to get the return status from the exception.  Possibly 400?

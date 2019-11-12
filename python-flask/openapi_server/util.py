@@ -1,7 +1,7 @@
 import datetime
 
 import six
-import typing  # noqa : F401
+import typing
 from openapi_server import typing_utils
 
 

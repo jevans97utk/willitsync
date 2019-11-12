@@ -7,7 +7,7 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: WillItSync
-  version: 1.1.0
+  version: 1.1.1
 servers:
 - description: SwaggerHub API Auto Mocking
   url: https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.2
@@ -24,6 +24,7 @@ paths:
       operationId: parse_robots
       parameters:
       - description: URL pointing to a robots.txt file
+        example: https://my.server.org/robots.txt
         explode: true
         in: query
         name: url
@@ -40,8 +41,16 @@ paths:
                 $ref: '#/components/schemas/RobotsFile'
           description: Parsed robots.txt file
         400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RobotsFile'
           description: bad input parameter
         404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RobotsFile'
           description: No robots.txt file found
       summary: Parses robots.txt to find sitemap(s)
       tags:
@@ -85,8 +94,16 @@ paths:
           description: "Metadata successfully parsed and validated. The response body\
             \ \ncontains the retrieved XML metadata.\n"
         400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SCIMetadata'
           description: Bad input parameter
         404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SCIMetadata'
           description: No XML document found at url
       summary: Retrieve and validate a science metadata XML document
       tags:
@@ -131,6 +148,10 @@ paths:
             JSON-LD successfully parsed and validated. The response body contains the
             retrieved schema.org JSON-LD object in the metadata element.
         400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SCIMetadata'
           description: Bad input parameter
       summary: Validate provided schema.org JSON-LD document
       tags:
@@ -143,6 +164,7 @@ paths:
       operationId: parse_sitemap
       parameters:
       - description: URL pointing to a sitemap xml document.
+        example: https://my.server.org/sitemap.xml
         explode: true
         in: query
         name: url
@@ -152,12 +174,13 @@ paths:
           type: string
         style: form
       - description: |
-          Maximum number of sitemap locations to return (100)
+          Maximum number of sitemap locations to return
         explode: true
         in: query
         name: maxlocs
         required: false
         schema:
+          default: 100
           type: integer
         style: form
       responses:
@@ -168,8 +191,16 @@ paths:
                 $ref: '#/components/schemas/Sitemap'
           description: Sitemap successfully retrieved and parsed
         400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sitemap'
           description: Bad input parameter
         404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sitemap'
           description: No sitemap document found at url
       summary: Parses sitemap.xml
       tags:
@@ -183,7 +214,8 @@ paths:
       operationId: parse_langingpage
       parameters:
       - description: |
-          URL pointing to landing page to be parsed
+          URL pointing to langing page to be parsed
+        example: https://my.server.org/data/dataset_1
         explode: true
         in: query
         name: url
@@ -200,8 +232,16 @@ paths:
                 $ref: '#/components/schemas/SOMetadata'
           description: Landing page successfully retrieved and parsed
         400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
           description: Bad input parameter
         404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
           description: No landing page document found at url
       summary: Extract schema.org metadata
       tags:
@@ -216,6 +256,7 @@ paths:
       parameters:
       - description: |
           URL referencing a schema.org JSON-LD document to retrieve and validate.
+        example: https://my.server.net/data/dataset_1/jsonld.json
         explode: true
         in: query
         name: url
@@ -244,8 +285,16 @@ paths:
             JSON-LD successfully parsed and validated. The response body contains the
             retrieved schema.org JSON-LD object in the metadata element.
         400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
           description: Bad input parameter
         404:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
           description: No JSON-LD document found at url
       summary: Retrieve and validate a schema.org JSON-LD document
       tags:
@@ -285,6 +334,10 @@ paths:
             JSON-LD successfully parsed and validated. The response body contains the
             retrieved schema.org JSON-LD object in the metadata element.
         400:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOMetadata'
           description: Bad input parameter
       summary: Validate provided schema.org JSON-LD document
       tags:
