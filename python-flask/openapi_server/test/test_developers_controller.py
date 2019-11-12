@@ -563,26 +563,31 @@ class TestDevelopersController(WillItSyncTestCase):
         """
         SCENARIO:  A landing page with valid JSON-LD is to be parsed.
 
-        EXPECTED RESULT:  The response body is SOmetadata.
+        EXPECTED RESULT:  The response code is 200 and the response body is
+        SOmetadata.
         """
-        testfile = 'valid_schema_dot_org.json'
-        text = ir.read_text('openapi_server.test.data', testfile)
-        data = json.loads(text)
-        self.setup_so_patcher(jsonld=data)
+        data = ir.read_binary('openapi_server.test.data.arm',
+                              'pghnoaaaosM1.b1.html')
 
+        # This is the landing page supposedly to be parsed.
         url = 'https://www.archive.arm.gov/metadata/html/pghnoaaaosM1.b1.html'
         query_string = [('url', url)]
         headers = {
             'Accept': 'application/json',
         }
 
-        response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/so',
-            method='GET',
-            headers=headers,
-            query_string=query_string)
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
+        with aioresponses() as m:
+            response_headers = {'Content-Type': 'text/html'}
+            m.get(url, body=data, headers=response_headers, status=200)
+
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/so',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+            msg = f"Response body is : {response.data.decode('utf-8')}"
+            self.assert200(response, msg)
 
         data = json.load(io.BytesIO(response.data))
 
@@ -624,7 +629,7 @@ class TestDevelopersController(WillItSyncTestCase):
 
     def test_parse_landing_page_404(self):
         """
-        SCENARIO: The SO harvester issues a 404 error when we attempt to
+        SCENARIO: We are given a URL that does not exist.
 
         EXPECTED RESULT:  404 error
         """
@@ -646,6 +651,37 @@ class TestDevelopersController(WillItSyncTestCase):
 
             message = f"Response body is : {response.data.decode('utf-8')}"
             self.assert404(response, message)
+
+    def test_parse_landing_page__uknown_binary(self):
+        """
+        SCENARIO: We are given a URL that returns PNG binary content.
+
+        EXPECTED RESULT:  LXML errors out, causing a 400 error.  There is no
+        metadata returned.
+        """
+
+        url = 'https://www.archive.arm.gov/metadata/html/pghnoaaaosM1.b1.html'
+        query_string = [('url', url)]
+        headers = {
+            'Accept': 'application/json',
+        }
+
+        with aioresponses() as m:
+            body = b'\x89\x00P\x00N\x00G\x00\r\x00\n\x00\x1a\x00\n\x00'
+            m.get(url, body=body, status=200)
+
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/so',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+        message = f"Response body is : {response.data.decode('utf-8')}"
+        self.assert400(response, message)
+
+        data = response.data.decode('utf-8')
+        j = json.loads(data)
+        self.assertFalse('metadata' in j)
 
     def test_parse_robots(self):
         """

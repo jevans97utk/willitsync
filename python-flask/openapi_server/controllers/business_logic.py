@@ -9,7 +9,7 @@ import time
 # 3rd party library imports
 import lxml.etree
 import requests
-from schema_org.so_core import SchemaDotOrgHarvester, JsonLdError
+from schema_org.so_core import SchemaDotOrgHarvester
 from pythonjsonlogger import jsonlogger
 import d1_scimeta.validate
 
@@ -66,6 +66,7 @@ def get_validate_metadata(url, formatid):
         'log': None,
         'metadata': None,
     }
+
     # Try to get the document
     try:
         content, headers = asyncio.run(obj.retrieve_url(url))
@@ -188,7 +189,6 @@ def get_validate_so(url, type_=None):
         so_metadata = SOMetadata(**kwargs)
 
         return so_metadata, 400
-
 
     obj = SchemaDotOrgHarvester(sitemap_url=url, logger=logobj.logger,
                                 **_KWARGS)
@@ -335,52 +335,52 @@ def parse_landing_page(url):
     -------
     SOMetadata, HTTP status code
     """
+    date = get_current_utc_timestamp()
+    kwargs = {
+        'url': url,
+        'evaluated_date': date,
+        'log': None,
+        'metadata': None,
+    }
+
     # Assume a 200 status code until we know otherwise.
     return_status = 200
-    logobj = CustomJsonLogger()
 
-    date = get_current_utc_timestamp()
+    logobj = CustomJsonLogger()
 
     obj = SchemaDotOrgHarvester(sitemap_url=url, logger=logobj.logger,
                                 **_KWARGS)
 
+    # Try to get the document
     try:
         doc = asyncio.run(obj.retrieve_landing_page_content(url))
-
     except Exception as e:
 
-        # Log the exception.
-        obj.logger.error(str(e))
-
-        # JSON-LD cannot be retrieved if the landing page cannot be retrieved.
-        jsonld = None
-
-        # Try to get the return status from the exception.  Possibly 400?
-        # Possibly 404?
-        if hasattr(e, 'message') and hasattr(e, 'status'):
-            return_status = e.status
-        else:
-            # Some other exception?
-            return_status = 500
-
-    else:
-
-        jsonld = obj.get_jsonld(doc)
-
-    finally:
-
-        # Always retrieve the logs no matter what.
+        logobj.logger.error(str(e))
         logs = logobj.get_log_messages()
 
-    kwargs = {
-        'url': url,
-        'evaluated_date': date,
-        'log': logs,
-        'metadata': jsonld,
-    }
-    so_metadata = SOMetadata(**kwargs)
+        kwargs['log'] = logs
+        so_obj = SOMetadata(**kwargs)
 
-    return so_metadata, return_status
+        if hasattr(e, 'status'):
+            return_status = e.status
+        else:
+            return_status = 400
+        return so_obj, return_status
+
+    # And finally, retrieve the JSON-LD
+    try:
+        jsonld = obj.get_jsonld(doc)
+    except Exception as e:
+        logobj.logger.error(str(e))
+        return_status = 400
+    else:
+        kwargs['metadata'] = jsonld
+        return_status = 200
+    finally:
+        kwargs['log'] = logobj.get_log_messages()
+        so_obj = SOMetadata(**kwargs)
+        return so_obj, return_status
 
 
 class CustomJsonLogger(object):
