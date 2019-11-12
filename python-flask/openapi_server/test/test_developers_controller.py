@@ -10,6 +10,7 @@ import unittest
 
 # 3rd party library imports
 from aioresponses import aioresponses
+import requests_mock
 import dateutil.parser
 
 # Local imports
@@ -40,17 +41,18 @@ class TestDevelopersController(WillItSyncTestCase):
             ('formatid', 'http://www.isotc211.org/2005/gmd')
         ]
 
-        headers = {
+        request_headers = {
             'Accept': 'application/json',
         }
 
         with aioresponses() as m:
-            m.get(url, body=content, status=200)
+            response_headers = {'Content-Type': 'text/xml'}
+            m.get(url, body=content, headers=response_headers, status=200)
 
             response = self.client.open(
                 '/jevans97utk/willitsync/1.0.2/scivalid',
                 method='GET',
-                headers=headers,
+                headers=request_headers,
                 query_string=query_string)
 
         text = response.data.decode('utf-8')
@@ -113,14 +115,19 @@ class TestDevelopersController(WillItSyncTestCase):
 
         url = 'https://www.archive.arm.gov/metadata/adc/html/nsanimfraod1michC2.c1.html'  # noqa : E501
         query_string = [('url', url), ('type', 'Wrong')]
-        headers = {
+        request_headers = {
             'Accept': 'application/json',
         }
-        response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/sovalid',
-            method='GET',
-            headers=headers,
-            query_string=query_string)
+
+        with aioresponses() as m:
+            response_headers = {'Content-Type': 'text/html'}
+            m.get(url, headers=response_headers, status=404)
+
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/sovalid',
+                method='GET',
+                headers=request_headers,
+                query_string=query_string)
 
         text = response.data.decode('utf-8')
         self.assert400(response, 'Response body is : ' + text)
@@ -130,7 +137,81 @@ class TestDevelopersController(WillItSyncTestCase):
         SOMetadata(*j)
         self.assertTrue(True)
 
-    def test_get_validate_so__no_type(self):
+    def test_get_validate_so__json__no_type(self):
+        """
+        SCENARIO:  We are given a GET request for a schema.org JSON-LD
+        document that is valid.  No type is given.
+
+        EXPECTED RESULT:  The schema.org metadata is returned in the body
+        of the response with a 200 status code.
+        """
+        data = ir.read_binary('openapi_server.test.data.arm',
+                              'nsanimfraod1michC2.c1.json')
+
+        url = (
+            'https://www.archive.arm.gov'
+            '/metadata/adc/json/nsanimfraod1michC2.c1.json'
+        )
+        query_string = [('url', url)]
+        headers = {
+            'Accept': 'application/json',
+        }
+
+        with aioresponses() as m:
+            response_headers = {'Content-type': 'application/json'}
+            m.get(url, body=data, headers=response_headers, status=200)
+
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/sovalid',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+        json.load(io.BytesIO(response.data))
+        self.assertTrue(True)
+
+    def test_get_validate_so__json__not_jsonld__no_type(self):
+        """
+        SCENARIO:  We are given a GET request for a JSON-LD document that is 
+        not SO JSON-LDv.  No type is given.
+
+        EXPECTED RESULT:  The JSON document is returned in the body of the
+        response with a 400 status code.
+        """
+        j = ['foo', {'bar': ['baz', None, 1.0, 2]}]
+        s = json.dumps(j)
+        data = s.encode('utf-8')
+
+        url = (
+            'https://www.archive.arm.gov'
+            '/metadata/adc/json/nsanimfraod1michC2.c1.json'
+        )
+        query_string = [('url', url)]
+        headers = {
+            'Accept': 'application/json',
+        }
+
+        with aioresponses() as m:
+            response_headers = {'Content-type': 'application/json'}
+            m.get(url, body=data, headers=response_headers, status=200)
+
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/sovalid',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+        self.assert400(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+        # Make sure that the returned content is the same as what was sent.
+        actual = json.load(io.BytesIO(response.data))
+        self.assertEqual(actual['metadata'], j)
+
+    def test_get_validate_so__html__no_type(self):
         """
         SCENARIO:  We are given a GET request for a schema.org landing page
         that has valid JSON-LD.  No type argument is given.
@@ -146,16 +227,21 @@ class TestDevelopersController(WillItSyncTestCase):
             'https://www.archive.arm.gov'
             '/metadata/adc/html/nsanimfraod1michC2.c1.html'
         )
-        # query_string = [('url', url), ('type', 'Dataset')]
         query_string = [('url', url)]
         headers = {
             'Accept': 'application/json',
         }
-        response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/sovalid',
-            method='GET',
-            headers=headers,
-            query_string=query_string)
+
+        with aioresponses() as m:
+            response_headers = {'Content-type': 'text/html'}
+            m.get(url, body=data, headers=response_headers, status=200)
+
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/sovalid',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
@@ -202,7 +288,45 @@ class TestDevelopersController(WillItSyncTestCase):
         actual = json.load(io.BytesIO(response.data))
         self.assertEqual(actual['metadata'], payload['metadata'])
 
-    def test_post_validate_400(self):
+    def test_post_validate__content_not_json__400(self):
+        """
+        SCENARIO:  We are given a POST request with a body that is not JSON.
+
+        EXPECTED RESULT:  The metadata field is empty.  The response is a 400.
+        """
+        payload = {}
+        payload['url'] = 'http://somewhere.out.there.com'
+        payload['evaluated_date'] = dt.datetime \
+                                      .utcnow() \
+                                      .replace(tzinfo=dt.timezone.utc) \
+                                      .isoformat()
+        payload['log'] = None
+
+        # The metadata is not JSON.
+        data = '<stuff>wrong</stuff>'
+        payload['metadata'] = '<stuff>wrong</stuff>'
+
+        self.setup_requests_patcher(200, data)
+
+        # We'll try to fake JSON, though.
+        headers = {
+            'Accept': 'application/json',
+            'Content-type': 'application/json',
+        }
+        response = self.client.open(
+            '/jevans97utk/willitsync/1.0.2/sovalid',
+            method='POST',
+            headers=headers,
+            data=json.dumps(payload),
+            content_type='application/json')
+
+        self.assert400(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+        actual = json.load(io.BytesIO(response.data))
+        self.assertEqual(actual['metadata'], payload['metadata'])
+
+    def test_post_validate__invalid_so__400(self):
         """
         SCENARIO:  We are given a POST request for an invalid schema.org
         JSON-LD object.

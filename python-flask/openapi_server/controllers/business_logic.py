@@ -9,7 +9,7 @@ import time
 # 3rd party library imports
 import lxml.etree
 import requests
-from schema_org.so_core import SchemaDotOrgHarvester
+from schema_org.so_core import SchemaDotOrgHarvester, JsonLdError
 from pythonjsonlogger import jsonlogger
 import d1_scimeta.validate
 
@@ -68,7 +68,7 @@ def get_validate_metadata(url, formatid):
     }
     # Try to get the document
     try:
-        content = asyncio.run(obj.retrieve_url(url))
+        content, headers = asyncio.run(obj.retrieve_url(url))
     except Exception as e:
 
         logobj.logger.error(str(e))
@@ -114,6 +114,13 @@ def validate_so(body, type_=None):
     """
     Business logic for validating a (hopefully) dataone Schema.org JSON-LD
     document.
+
+    Parameters
+    ----------
+    body : object
+        content-type:  application/json
+    type_ : str
+        Hopefully 'Dataset'
 
     Returns
     -------
@@ -172,41 +179,61 @@ def get_validate_so(url, type_=None):
         msg = f'Unsupported SO JSON-LD type {type_}.'
         logobj.logger.error(msg)
         logs = logobj.get_log_messages()
+
+        kwargs = {
+            'url': url,
+            'evaluated_date': date,
+            'log': logs,
+            'metadata': jsonld,
+        }
+        so_metadata = SOMetadata(**kwargs)
+
+        return so_metadata, 400
+
+
+    obj = SchemaDotOrgHarvester(sitemap_url=url, logger=logobj.logger,
+                                **_KWARGS)
+
+    # Ok, so try to retrieve the document.
+    try:
+
+        content, headers = asyncio.run(obj.retrieve_url(url))
+        if 'text/html' in headers['Content-Type']:
+            # It's a landing page.
+            doc = lxml.etree.HTML(content)
+            jsonld = obj.get_jsonld(doc)
+        elif headers['Content-Type'] == 'application/json':
+            # It's a JSON-LD document.
+            jsonld = json.load(io.BytesIO(content))
+
+        obj.validate_dataone_so_jsonld(jsonld)
+
+    except JsonLdError as e:
+        # Log the exception.
+        obj.logger.error(str(e))
+
+        # Bad JSON-LD is a problem on the part of the user.
         return_status = 400
 
-    else:
+    except Exception as e:
 
-        obj = SchemaDotOrgHarvester(sitemap_url=url, logger=logobj.logger,
-                                    **_KWARGS)
+        # Log the exception.
+        obj.logger.error(str(e))
 
-        try:
-            doc = asyncio.run(obj.retrieve_landing_page_content(url))
-            jsonld = obj.get_jsonld(doc)
-            obj.validate_dataone_so_jsonld(jsonld)
-
-        except Exception as e:
-
-            # Log the exception.
-            obj.logger.error(str(e))
-
-            # JSON-LD cannot be retrieved if the landing page cannot be
-            # retrieved.
-            jsonld = None
-
-            # Try to get the return status from the exception.  Possibly 400?
-            # Possibly 404?
-            if hasattr(e, 'message') and hasattr(e, 'status'):
-                return_status = e.status
-            else:
-                # Some other exception?
-                return_status = 500
-
+        # Try to get the return status from the exception.  Possibly 400?
+        # Possibly 404?
+        if hasattr(e, 'message') and hasattr(e, 'status'):
+            return_status = e.status
         else:
-            return_status = 200
-        finally:
+            # Some other exception?
+            return_status = 500
 
-            # Always retrieve the logs no matter what.
-            logs = logobj.get_log_messages()
+    else:
+        return_status = 200
+    finally:
+
+        # Always retrieve the logs no matter what.
+        logs = logobj.get_log_messages()
 
     kwargs = {
         'url': url,
