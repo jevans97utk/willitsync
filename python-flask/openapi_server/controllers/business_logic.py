@@ -77,12 +77,8 @@ def get_validate_metadata(url, formatid):
         kwargs['log'] = logs
         scimetadata = SCIMetadata(**kwargs)
 
-        # The error status is most likely a 404?
-        if hasattr(e, 'message') and hasattr(e, 'status'):
-            return_status = 404
-        else:
-            return_status = 400
-        return scimetadata, return_status
+        # If we could not retrieve the URL, then it is a 404.
+        return scimetadata, 404
 
     # Decode the document.
     try:
@@ -103,10 +99,11 @@ def get_validate_metadata(url, formatid):
     except Exception as e:
         logobj.logger.error(str(e))
         return_status = 400
+    else:
+        return_status = 200
     finally:
         kwargs['log'] = logobj.get_log_messages()
         scimetadata = SCIMetadata(**kwargs)
-        return_status = 200
         return scimetadata, return_status
 
 

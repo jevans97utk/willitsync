@@ -101,6 +101,84 @@ class TestDevelopersController(WillItSyncTestCase):
         SCIMetadata(*j)
         self.assertTrue(True)
 
+    def test_get_validate_metadata__invalid_xml__404(self):
+        """
+        SCENARIO:  We are given a valid URL for an invalid XML metadata
+        document.
+
+        EXPECTED RESULT:  A 400 status code.  We can load the response body
+        into a SCIMetadata object.
+        """
+        url = 'https://www.archive.arm.gov/metadata/adc/html/nsaqcrad1longC2.c2.xml'  # noqa : E501
+
+        content = ir.read_binary('openapi_server.test.data.arm',
+                                 'nsaqcrad1longC2.c2.invalid.xml')
+
+        query_string = [
+            ('url', url),
+            ('formatid', 'http://www.isotc211.org/2005/gmd')
+        ]
+
+        headers = {
+            'Accept': 'application/json',
+        }
+
+        with aioresponses() as m:
+            m.get(url, body=content, status=200)
+
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/scivalid',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+        text = response.data.decode('utf-8')
+        self.assert400(response, 'Response body is : ' + text)
+
+        # Verify that we can form an SOMetadata object out of the reponse
+        j = json.loads(text)
+        SCIMetadata(*j)
+        self.assertTrue(True)
+
+    def test_get_validate_metadata__invalid_format_id__400(self):
+        """
+        SCENARIO:  We are given a valid URL for an XML metadata document that
+        is not valid for the given ID.
+
+        EXPECTED RESULT:  A 400 status code.  We can load the response body
+        into a SCIMetadata object.
+        """
+        url = 'https://www.archive.arm.gov/metadata/adc/html/nsaqcrad1longC2.c2.xml'  # noqa : E501
+
+        content = ir.read_binary('openapi_server.test.data.dryad.v3p1',
+                                 'example.xml')
+
+        query_string = [
+            ('url', url),
+            ('formatid', 'http://www.isotc211.org/2005/gmd')
+        ]
+
+        headers = {
+            'Accept': 'application/json',
+        }
+
+        with aioresponses() as m:
+            m.get(url, body=content, status=200)
+
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/scivalid',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+        text = response.data.decode('utf-8')
+        self.assert400(response, 'Response body is : ' + text)
+
+        # Verify that we can form an SOMetadata object out of the reponse
+        j = json.loads(text)
+        SCIMetadata(*j)
+        self.assertTrue(True)
+
     def test_get_validate_so__bad_type(self):
         """
         SCENARIO:  We are given a GET request for a schema.org landing page
