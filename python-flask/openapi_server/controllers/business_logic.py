@@ -117,7 +117,7 @@ def validate_so(body, type_=None):
     ----------
     body : object
         content-type:  application/json
-    type_ : str
+    sotype : str
         Hopefully 'Dataset'
 
     Returns
@@ -161,7 +161,7 @@ def validate_so(body, type_=None):
     return so_metadata, return_status
 
 
-def get_validate_so(url, type_=None):
+def get_validate_so(url, sotype=None):
     """
     Business logic for using schema_org to valid SO JSON-LD from either a
     landing page or as a standalone document.  GET /sovalid.
@@ -174,9 +174,9 @@ def get_validate_so(url, type_=None):
     date = get_current_utc_timestamp()
     jsonld = None
 
-    if type_ != 'Dataset':
+    if sotype != 'Dataset':
 
-        msg = f'Unsupported SO JSON-LD type {type_}.'
+        msg = f'Unsupported SO JSON-LD type {sotype}.'
         logobj.logger.error(msg)
         logs = logobj.get_log_messages()
 

@@ -50,7 +50,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, body=content, headers=response_headers, status=200)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/scivalid',
+                '/willitsync/1.1.1/scivalid',
                 method='GET',
                 headers=request_headers,
                 query_string=query_string)
@@ -88,7 +88,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, status=404)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/scivalid',
+                '/willitsync/1.1.1/scivalid',
                 method='GET',
                 headers=headers,
                 query_string=query_string)
@@ -127,7 +127,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, body=content, status=200)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/scivalid',
+                '/willitsync/1.1.1/scivalid',
                 method='GET',
                 headers=headers,
                 query_string=query_string)
@@ -166,7 +166,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, body=content, status=200)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/scivalid',
+                '/willitsync/1.1.1/scivalid',
                 method='GET',
                 headers=headers,
                 query_string=query_string)
@@ -192,7 +192,7 @@ class TestDevelopersController(WillItSyncTestCase):
         self.setup_requests_patcher(200, data)
 
         url = 'https://www.archive.arm.gov/metadata/adc/html/nsanimfraod1michC2.c1.html'  # noqa : E501
-        query_string = [('url', url), ('type', 'Wrong')]
+        query_string = [('url', url), ('sotype', 'Wrong')]
         request_headers = {
             'Accept': 'application/json',
         }
@@ -202,7 +202,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, headers=response_headers, status=404)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/sovalid',
+                '/willitsync/1.1.1/sovalid',
                 method='GET',
                 headers=request_headers,
                 query_string=query_string)
@@ -240,7 +240,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, body=data, headers=response_headers, status=200)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/sovalid',
+                '/willitsync/1.1.1/sovalid',
                 method='GET',
                 headers=headers,
                 query_string=query_string)
@@ -274,7 +274,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, body=data, status=404)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/sovalid',
+                '/willitsync/1.1.1/sovalid',
                 method='GET',
                 headers=headers,
                 query_string=query_string)
@@ -311,7 +311,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, body=data, headers=response_headers, status=200)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/sovalid',
+                '/willitsync/1.1.1/sovalid',
                 method='GET',
                 headers=headers,
                 query_string=query_string)
@@ -349,7 +349,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, body=data, headers=response_headers, status=200)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/sovalid',
+                '/willitsync/1.1.1/sovalid',
                 method='GET',
                 headers=headers,
                 query_string=query_string)
@@ -387,7 +387,7 @@ class TestDevelopersController(WillItSyncTestCase):
             'Content-type': 'application/json',
         }
         response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/sovalid',
+            '/willitsync/1.1.1/sovalid',
             method='POST',
             headers=headers,
             data=json.dumps(payload),
@@ -428,7 +428,7 @@ class TestDevelopersController(WillItSyncTestCase):
         }
         query_string = [('type', 'Wrong')]
         response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/sovalid',
+            '/willitsync/1.1.1/sovalid',
             method='POST',
             headers=headers,
             data=json.dumps(payload),
@@ -468,7 +468,7 @@ class TestDevelopersController(WillItSyncTestCase):
             'Content-type': 'application/json',
         }
         response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/sovalid',
+            '/willitsync/1.1.1/sovalid',
             method='POST',
             headers=headers,
             data=json.dumps(payload),
@@ -507,7 +507,7 @@ class TestDevelopersController(WillItSyncTestCase):
             'Content-type': 'application/json',
         }
         response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/sovalid',
+            '/willitsync/1.1.1/sovalid',
             method='POST',
             headers=headers,
             data=json.dumps(payload),
@@ -546,7 +546,7 @@ class TestDevelopersController(WillItSyncTestCase):
             'Content-type': 'application/json',
         }
         response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/sovalid',
+            '/willitsync/1.1.1/sovalid',
             method='POST',
             headers=headers,
             data=json.dumps(payload),
@@ -581,7 +581,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, body=data, headers=response_headers, status=200)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/so',
+                '/willitsync/1.1.1/so',
                 method='GET',
                 headers=headers,
                 query_string=query_string)
@@ -623,7 +623,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, body=data, headers=response_headers, status=200)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/so',
+                '/willitsync/1.1.1/so',
                 method='GET',
                 headers=headers,
                 query_string=query_string)
@@ -661,7 +661,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, status=400)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/so',
+                '/willitsync/1.1.1/so',
                 method='GET',
                 headers=headers,
                 query_string=query_string)
@@ -686,7 +686,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, status=404)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/so',
+                '/willitsync/1.1.1/so',
                 method='GET',
                 headers=headers,
                 query_string=query_string)
@@ -713,7 +713,7 @@ class TestDevelopersController(WillItSyncTestCase):
             m.get(url, body=body, status=200)
 
             response = self.client.open(
-                '/jevans97utk/willitsync/1.0.2/so',
+                '/willitsync/1.1.1/so',
                 method='GET',
                 headers=headers,
                 query_string=query_string)
@@ -740,7 +740,7 @@ class TestDevelopersController(WillItSyncTestCase):
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/robots',
+            '/willitsync/1.1.1/robots',
             method='GET',
             headers=headers,
             query_string=query_string)
@@ -774,7 +774,7 @@ class TestDevelopersController(WillItSyncTestCase):
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/robots',
+            '/willitsync/1.1.1/robots',
             method='GET',
             headers=headers,
             query_string=query_string)
@@ -795,7 +795,7 @@ class TestDevelopersController(WillItSyncTestCase):
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/robots',
+            '/willitsync/1.1.1/robots',
             method='GET',
             headers=headers,
             query_string=query_string)
@@ -812,7 +812,7 @@ class TestDevelopersController(WillItSyncTestCase):
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/robots',
+            '/willitsync/1.1.1/robots',
             method='GET',
             headers=headers,
             query_string=query_string)
@@ -841,7 +841,7 @@ class TestDevelopersController(WillItSyncTestCase):
             'Accept': 'application/json',
         }
         response = self.client.open(
-            '/jevans97utk/willitsync/1.0.2/sitemap',
+            '/willitsync/1.1.1/sitemap',
             method='GET',
             headers=headers,
             query_string=query_string)

@@ -2,15 +2,16 @@ openapi: 3.0.0
 info:
   contact:
     email: jevans97@utk.edu
-  description: Sitemap Checker
+  description: "Provides various methods for retrieving, parsing, and validating the\
+    \ \nvarious portions of a web harvesting workflow.\n"
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: WillItSync
   version: 1.1.1
 servers:
-- description: SwaggerHub API Auto Mocking
-  url: https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.2
+- description: Development server on localhost
+  url: https://localhost:8080/willitsync/1.1.1
 tags:
 - description: Operations available to regular developers
   name: developers
@@ -20,7 +21,7 @@ paths:
   /robots:
     get:
       description: |
-        Given a robots.txt file, parse, and retrieve referenced sitemap documents.
+        Given a robots.txt file, parse, and retrieve referenced sitemap locations.
       operationId: parse_robots
       parameters:
       - description: URL pointing to a robots.txt file
@@ -52,7 +53,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/RobotsFile'
           description: No robots.txt file found
-      summary: Parses robots.txt to find sitemap(s)
+      summary: Retrieve sitemap references from a robots.txt file
       tags:
       - developers
       - users
@@ -153,17 +154,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/SCIMetadata'
           description: Bad input parameter
-      summary: Validate provided schema.org JSON-LD document
+      summary: Validate provided science metadata XML document
       tags:
       - developers
       - users
       x-openapi-router-controller: openapi_server.controllers.developers_controller
   /sitemap:
     get:
-      description: Parses a sitemap to retrieve entries.
+      description: |
+        Parses a sitemap to retrieve location entries.
       operationId: parse_sitemap
       parameters:
-      - description: URL pointing to a sitemap xml document.
+      - description: URL pointing to a sitemap xml document
         example: https://my.server.org/sitemap.xml
         explode: true
         in: query
@@ -202,7 +204,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Sitemap'
           description: No sitemap document found at url
-      summary: Parses sitemap.xml
+      summary: Get locatiosn from a sitemap.
       tags:
       - developers
       - users
@@ -210,8 +212,8 @@ paths:
   /so:
     get:
       description: |
-        Parses landing page to extract schema.org metadata
-      operationId: parse_langingpage
+        Parses landing page to extract schema.org JSON-LD metadata
+      operationId: parse_landingpage
       parameters:
       - description: |
           URL pointing to langing page to be parsed
@@ -243,7 +245,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SOMetadata'
           description: No landing page document found at url
-      summary: Extract schema.org metadata
+      summary: Extract schema.org metadata from web page
       tags:
       - developers
       - users
@@ -255,7 +257,7 @@ paths:
       operationId: get_validate_so
       parameters:
       - description: |
-          URL referencing a schema.org JSON-LD document to retrieve and validate.
+          URL referencing a schema.org JSON-LD document or a landing page containing schema.org JSON-LD to retrieve and validate.
         example: https://my.server.net/data/dataset_1/jsonld.json
         explode: true
         in: query
@@ -267,9 +269,10 @@ paths:
         style: form
       - description: |
           The name of the schema.org type to test for validity.
+        example: Dataset
         explode: true
         in: query
-        name: type
+        name: sotype
         required: false
         schema:
           default: Dataset
@@ -282,8 +285,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SOMetadata'
           description: |
-            JSON-LD successfully parsed and validated. The response body contains the
-            retrieved schema.org JSON-LD object in the metadata element.
+            JSON-LD successfully parsed and validated. The response body contains the retrieved schema.org JSON-LD object in the metadata element.
         400:
           content:
             application/json:
