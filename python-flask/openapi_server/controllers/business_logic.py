@@ -248,7 +248,8 @@ def get_validate_so(url, type_=None):
 
 def parse_sitemap(url, maxlocs=None):
     """
-    Business logic for using schema_org to process sitemaps.
+    Business logic for using schema_org to process sitemaps, i.e. the /sitemap
+    GET endpoint.
 
     Parameters
     ----------
@@ -269,8 +270,13 @@ def parse_sitemap(url, maxlocs=None):
     """
     date = get_current_utc_timestamp()
     logobj = CustomJsonLogger()
-    obj = SchemaDotOrgHarvester(sitemap_url=url, logger=logobj.logger,
-                                num_documents=maxlocs, **_KWARGS)
+    kwargs = _KWARGS.copy()
+    kwargs['sitemap_url'] = url
+    kwargs['logger'] = logobj.logger
+    if maxlocs is not None:
+        kwargs['num_documents'] = maxlocs
+
+    obj = SchemaDotOrgHarvester(**kwargs)
     asyncio.run(obj.run())
 
     sitemaps = obj.get_sitemaps()
@@ -394,7 +400,10 @@ class CustomJsonLogger(object):
     def __init__(self):
 
         self._json_formatted_log_items = None
+        self.setup_logger()
+        self._logs = None
 
+    def setup_logger(self):
         self.logger = logging.getLogger('dataone')
         self.logger.setLevel(logging.INFO)
 
@@ -410,7 +419,6 @@ class CustomJsonLogger(object):
         formatter.converter = time.gmtime
 
         stream.setFormatter(formatter)
-
         self.logger.addHandler(stream)
 
     def post_process(self):
@@ -432,23 +440,11 @@ class CustomJsonLogger(object):
         s = f"[{','.join(log_entries)}]"
 
         # Turn into actual JSON and massage into the proper form.
+        j = json.loads(s)
         self._json_formatted_log_items = json.loads(s)
 
-    def get_log_messages(self):
-        """
-        If log_to_string was specified as a constructor keyword argument, all
-        the log entries are stored in the "_logstrings" attribute, making them
-        recoverable.
-
-        Returns
-        -------
-        JSON array of log entries
-        """
-        if self._json_formatted_log_items is None:
-            self.post_process()
-
-        logs = []
-        for entry in self._json_formatted_log_items:
+        self._logs = []
+        for entry in j:
 
             # "msg" instead of "message"
             entry['msg'] = entry.pop('message')
@@ -463,8 +459,22 @@ class CustomJsonLogger(object):
             # Get rid of the name of the logger.
             entry.pop('name')
 
-            logs.append(LogEntry(**entry))
+            self._logs.append(entry)
 
+    def get_log_messages(self):
+        """
+        If log_to_string was specified as a constructor keyword argument, all
+        the log entries are stored in the "_logstrings" attribute, making them
+        recoverable.
+
+        Returns
+        -------
+        JSON array of log entries
+        """
+        if self._logs is None:
+            self.post_process()
+
+        logs = [LogEntry(**entry) for entry in self._logs]
         return logs
 
     def get_return_status(self):
@@ -472,13 +482,13 @@ class CustomJsonLogger(object):
         Go thru the list of log entries.  If any of the 'levelname' values
         are ERROR, set the return status to 400.
         """
-        if self._json_formatted_log_items is None:
+        if self._logs is None:
             self.post_process()
 
         # Assume all is ok until we know otherwise.
         return_status = 200
 
-        for log_entry in self._json_formatted_log_items:
-            if log_entry['levelname'] == 'ERROR':
+        for log_entry in self._logs:
+            if log_entry['level'] in ['ERROR', logging.ERROR]:
                 return_status = 400
         return return_status
