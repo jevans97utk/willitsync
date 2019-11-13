@@ -1,7 +1,9 @@
 openapi: 3.0.0
 info:
   title: WillItSync
-  description: Sitemap Checker
+  description: |
+    Provides various methods for retrieving, parsing, and validating the 
+    various portions of a web harvesting workflow.
   contact:
     email: jevans97@utk.edu
   license:
@@ -9,8 +11,8 @@ info:
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
   version: 1.1.1
 servers:
-  - url: 'https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.2'
-    description: SwaggerHub API Auto Mocking
+  - url: 'https://localhost:8080/willitsync/1.1.1'
+    description: Development server on localhost
 tags:
   - name: developers
     description: Operations available to regular developers
@@ -22,9 +24,9 @@ paths:
       tags:
         - developers
         - users
-      summary: Parses robots.txt to find sitemap(s)
+      summary: Retrieve sitemap references from a robots.txt file
       description: |
-        Given a robots.txt file, parse, and retrieve referenced sitemap documents.
+        Given a robots.txt file, parse, and retrieve referenced sitemap locations.
       operationId: parseRobots
       parameters:
         - name: url
@@ -56,16 +58,17 @@ paths:
                 $ref: '#/components/schemas/RobotsFile'
   /sitemap:
     get:
-      summary: Parses sitemap.xml
+      summary: Get locatiosn from a sitemap.
       tags:
         - developers
         - users
-      description: Parses a sitemap to retrieve entries.
+      description: |
+        Parses a sitemap to retrieve location entries.
       operationId: parseSitemap
       parameters:
         - in: query
           name: url
-          description: URL pointing to a sitemap xml document.
+          description: URL pointing to a sitemap xml document
           required: true
           example: "https://my.server.org/sitemap.xml"
           schema:
@@ -99,14 +102,14 @@ paths:
                 $ref: '#/components/schemas/Sitemap'
   /so:
     get:
-      summary: Extract schema.org metadata
+      summary: Extract schema.org metadata from web page
       tags:
         - developers
         - users
       description: |
-        Parses landing page to extract schema.org metadata
+        Parses landing page to extract schema.org JSON-LD metadata
       operationId:
-        parseLangingpage
+        parseLandingpage
       parameters:
         - in: query
           name: url
@@ -152,23 +155,23 @@ paths:
           name: url
           required: true
           description: |
-            URL referencing a schema.org JSON-LD document to retrieve and validate.
+            URL referencing a schema.org JSON-LD document or a landing page containing schema.org JSON-LD to retrieve and validate.
           example: "https://my.server.net/data/dataset_1/jsonld.json"
           schema:
             type: string
             format: url
         - in: query
-          name: type
+          name: sotype
           description: |
             The name of the schema.org type to test for validity.
+          example: "Dataset"
           schema:
             type: string
             default: Dataset
       responses:
         '200':
           description: |
-            JSON-LD successfully parsed and validated. The response body contains the
-            retrieved schema.org JSON-LD object in the metadata element.
+            JSON-LD successfully parsed and validated. The response body contains the retrieved schema.org JSON-LD object in the metadata element.
           content:
             application/json:
               schema:
@@ -278,7 +281,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SCIMetadata'
     post:
-      summary: Validate provided schema.org JSON-LD document
+      summary: Validate provided science metadata XML document
       tags:
         - developers
         - users
