@@ -31,14 +31,33 @@ def robot(ctx, url):
     pprint(result)
     
 
-
 @main.command()
 @click.pass_context
 @click.option('-u','--url', required=True, help='Url to try')
 @click.option('-x','--maxentries', default=100, help='Maximum number of entries to show')
 def sitemap(ctx, url, maxentries):
     logger.debug(f'calling sitemap with url={url} and maxentries={maxentries}')
+    result = ctx.obj['client'].parse_sitemap(url)
+    pprint(result)
 
+
+@main.command()
+@click.pass_context
+@click.option('-u','--url', required=True, help='Url to try')
+@click.option('-u','--url', required=True, help='Url to try')
+def so(ctx, url):
+    logger.debug(f'Calling so with url = {url}')
+    result = ctx.obj['client'].parse_langingpage(url)
+    pprint(result)
+
+
+@main.command()
+@click.pass_context
+@click.option('-u','--url', required=True, help='Url to try')
+def sovalid(ctx, url):
+    logger.debug(f'Calling so with url = {url}')
+    result = ctx.obj['client'].get_validate_so(url)
+    pprint(result)
 
 if __name__ == "__main__":
     res = main(obj={})
