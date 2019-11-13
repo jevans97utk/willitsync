@@ -22,7 +22,7 @@ willitsync -v DEBUG sitemap -u "https://doi.pangaea.de/sitemap-0.xml.gz"
 Example, get schema.org markup from landing page:
 
 ```
-willitsync -v DEBUG landingpage -u "https://doi.pangaea.de/10.1594/PANGAEA.901968"
+willitsync -v DEBUG so -u "https://doi.pangaea.de/10.1594/PANGAEA.901968"
 debug: in main()
 debug: Calling so with url = https://doi.pangaea.de/10.1594/PANGAEA.901968
 {'evaluated_date': datetime.datetime(2019, 11, 13, 13, 40, 38, 588000, tzinfo=tzutc()),
