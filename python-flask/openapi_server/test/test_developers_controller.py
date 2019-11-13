@@ -601,6 +601,48 @@ class TestDevelopersController(WillItSyncTestCase):
         # can we dump the metadata?
         json.dumps(data['metadata'])
 
+    def test_parse_landing_page_no_jsonld(self):
+        """
+        SCENARIO:  A landing page without valid JSON-LD is to be parsed.
+
+        EXPECTED RESULT:  The response code is 200 and the response body is
+        SOmetadata but there is no metadata.
+        """
+        data = ir.read_binary('openapi_server.test.data.arm',
+                              'nsanimfraod1michC2.c1.no_jsonld.html')
+
+        # This is the landing page supposedly to be parsed.
+        url = 'https://www.archive.arm.gov/metadata/html/nsanimfraod1michC2.c1.html'
+        query_string = [('url', url)]
+        headers = {
+            'Accept': 'application/json',
+        }
+
+        with aioresponses() as m:
+            response_headers = {'Content-Type': 'text/html'}
+            m.get(url, body=data, headers=response_headers, status=200)
+
+            response = self.client.open(
+                '/jevans97utk/willitsync/1.0.2/so',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+            msg = f"Response body is : {response.data.decode('utf-8')}"
+            self.assert400(response, msg)
+
+        data = json.load(io.BytesIO(response.data))
+
+        self.assertEqual(url, data['url'])
+
+        # can we parse the date?
+        dateutil.parser.parse(data['evaluated_date'])
+
+        self.assertTrue('log' in data)
+
+        # No metadata is returned, because there was no JSON-LD.
+        self.assertFalse('metadata' in data)
+
     def test_parse_landing_page_400(self):
         """
         SCENARIO: The SO harvester issues a 400 error when we attempt to
