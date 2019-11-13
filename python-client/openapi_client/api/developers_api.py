@@ -3,7 +3,7 @@
 """
     WillItSync
 
-    Sitemap Checker  # noqa: E501
+    Provides various methods for retrieving, parsing, and validating the  various portions of a web harvesting workflow.   # noqa: E501
 
     The version of the OpenAPI document: 1.1.1
     Contact: jevans97@utk.edu
@@ -163,8 +163,8 @@ class DevelopersApi(object):
         >>> result = thread.get()
 
         :param async_req bool: execute request asynchronously
-        :param str url: URL referencing a schema.org JSON-LD document to retrieve and validate.  (required)
-        :param str type: The name of the schema.org type to test for validity. 
+        :param str url: URL referencing a schema.org JSON-LD document or a landing page containing schema.org JSON-LD to retrieve and validate.  (required)
+        :param str sotype: The name of the schema.org type to test for validity. 
         :param _preload_content: if False, the urllib3.HTTPResponse object will
                                  be returned without reading/decoding response
                                  data. Default is True.
@@ -189,8 +189,8 @@ class DevelopersApi(object):
         >>> result = thread.get()
 
         :param async_req bool: execute request asynchronously
-        :param str url: URL referencing a schema.org JSON-LD document to retrieve and validate.  (required)
-        :param str type: The name of the schema.org type to test for validity. 
+        :param str url: URL referencing a schema.org JSON-LD document or a landing page containing schema.org JSON-LD to retrieve and validate.  (required)
+        :param str sotype: The name of the schema.org type to test for validity. 
         :param _return_http_data_only: response data without head status code
                                        and headers
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -207,7 +207,7 @@ class DevelopersApi(object):
 
         local_var_params = locals()
 
-        all_params = ['url', 'type']  # noqa: E501
+        all_params = ['url', 'sotype']  # noqa: E501
         all_params.append('async_req')
         all_params.append('_return_http_data_only')
         all_params.append('_preload_content')
@@ -233,8 +233,8 @@ class DevelopersApi(object):
         query_params = []
         if 'url' in local_var_params:
             query_params.append(('url', local_var_params['url']))  # noqa: E501
-        if 'type' in local_var_params:
-            query_params.append(('type', local_var_params['type']))  # noqa: E501
+        if 'sotype' in local_var_params:
+            query_params.append(('sotype', local_var_params['sotype']))  # noqa: E501
 
         header_params = {}
 
@@ -265,13 +265,13 @@ class DevelopersApi(object):
             _request_timeout=local_var_params.get('_request_timeout'),
             collection_formats=collection_formats)
 
-    def parse_langingpage(self, url, **kwargs):  # noqa: E501
-        """Extract schema.org metadata  # noqa: E501
+    def parse_landingpage(self, url, **kwargs):  # noqa: E501
+        """Extract schema.org metadata from web page  # noqa: E501
 
-        Parses landing page to extract schema.org metadata   # noqa: E501
+        Parses landing page to extract schema.org JSON-LD metadata   # noqa: E501
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.parse_langingpage(url, async_req=True)
+        >>> thread = api.parse_landingpage(url, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool: execute request asynchronously
@@ -288,15 +288,15 @@ class DevelopersApi(object):
                  returns the request thread.
         """
         kwargs['_return_http_data_only'] = True
-        return self.parse_langingpage_with_http_info(url, **kwargs)  # noqa: E501
+        return self.parse_landingpage_with_http_info(url, **kwargs)  # noqa: E501
 
-    def parse_langingpage_with_http_info(self, url, **kwargs):  # noqa: E501
-        """Extract schema.org metadata  # noqa: E501
+    def parse_landingpage_with_http_info(self, url, **kwargs):  # noqa: E501
+        """Extract schema.org metadata from web page  # noqa: E501
 
-        Parses landing page to extract schema.org metadata   # noqa: E501
+        Parses landing page to extract schema.org JSON-LD metadata   # noqa: E501
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.parse_langingpage_with_http_info(url, async_req=True)
+        >>> thread = api.parse_landingpage_with_http_info(url, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool: execute request asynchronously
@@ -327,14 +327,14 @@ class DevelopersApi(object):
             if key not in all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method parse_langingpage" % key
+                    " to method parse_landingpage" % key
                 )
             local_var_params[key] = val
         del local_var_params['kwargs']
         # verify the required parameter 'url' is set
         if ('url' not in local_var_params or
                 local_var_params['url'] is None):
-            raise ApiValueError("Missing the required parameter `url` when calling `parse_langingpage`")  # noqa: E501
+            raise ApiValueError("Missing the required parameter `url` when calling `parse_landingpage`")  # noqa: E501
 
         collection_formats = {}
 
@@ -374,9 +374,9 @@ class DevelopersApi(object):
             collection_formats=collection_formats)
 
     def parse_robots(self, url, **kwargs):  # noqa: E501
-        """Parses robots.txt to find sitemap(s)  # noqa: E501
+        """Retrieve sitemap references from a robots.txt file  # noqa: E501
 
-        Given a robots.txt file, parse, and retrieve referenced sitemap documents.   # noqa: E501
+        Given a robots.txt file, parse, and retrieve referenced sitemap locations.   # noqa: E501
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
         >>> thread = api.parse_robots(url, async_req=True)
@@ -399,9 +399,9 @@ class DevelopersApi(object):
         return self.parse_robots_with_http_info(url, **kwargs)  # noqa: E501
 
     def parse_robots_with_http_info(self, url, **kwargs):  # noqa: E501
-        """Parses robots.txt to find sitemap(s)  # noqa: E501
+        """Retrieve sitemap references from a robots.txt file  # noqa: E501
 
-        Given a robots.txt file, parse, and retrieve referenced sitemap documents.   # noqa: E501
+        Given a robots.txt file, parse, and retrieve referenced sitemap locations.   # noqa: E501
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
         >>> thread = api.parse_robots_with_http_info(url, async_req=True)
@@ -482,16 +482,16 @@ class DevelopersApi(object):
             collection_formats=collection_formats)
 
     def parse_sitemap(self, url, **kwargs):  # noqa: E501
-        """Parses sitemap.xml  # noqa: E501
+        """Get locatiosn from a sitemap.  # noqa: E501
 
-        Parses a sitemap to retrieve entries.  # noqa: E501
+        Parses a sitemap to retrieve location entries.   # noqa: E501
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
         >>> thread = api.parse_sitemap(url, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool: execute request asynchronously
-        :param str url: URL pointing to a sitemap xml document. (required)
+        :param str url: URL pointing to a sitemap xml document (required)
         :param int maxlocs: Maximum number of sitemap locations to return 
         :param _preload_content: if False, the urllib3.HTTPResponse object will
                                  be returned without reading/decoding response
@@ -508,16 +508,16 @@ class DevelopersApi(object):
         return self.parse_sitemap_with_http_info(url, **kwargs)  # noqa: E501
 
     def parse_sitemap_with_http_info(self, url, **kwargs):  # noqa: E501
-        """Parses sitemap.xml  # noqa: E501
+        """Get locatiosn from a sitemap.  # noqa: E501
 
-        Parses a sitemap to retrieve entries.  # noqa: E501
+        Parses a sitemap to retrieve location entries.   # noqa: E501
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
         >>> thread = api.parse_sitemap_with_http_info(url, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool: execute request asynchronously
-        :param str url: URL pointing to a sitemap xml document. (required)
+        :param str url: URL pointing to a sitemap xml document (required)
         :param int maxlocs: Maximum number of sitemap locations to return 
         :param _return_http_data_only: response data without head status code
                                        and headers
@@ -594,7 +594,7 @@ class DevelopersApi(object):
             collection_formats=collection_formats)
 
     def validate_metadata(self, formatid, body, **kwargs):  # noqa: E501
-        """Validate provided schema.org JSON-LD document  # noqa: E501
+        """Validate provided science metadata XML document  # noqa: E501
 
         Given an XML metadata document, validate the XML.   # noqa: E501
         This method makes a synchronous HTTP request by default. To make an
@@ -620,7 +620,7 @@ class DevelopersApi(object):
         return self.validate_metadata_with_http_info(formatid, body, **kwargs)  # noqa: E501
 
     def validate_metadata_with_http_info(self, formatid, body, **kwargs):  # noqa: E501
-        """Validate provided schema.org JSON-LD document  # noqa: E501
+        """Validate provided science metadata XML document  # noqa: E501
 
         Given an XML metadata document, validate the XML.   # noqa: E501
         This method makes a synchronous HTTP request by default. To make an

@@ -1,15 +1,15 @@
 # openapi_client.UsersApi
 
-All URIs are relative to *https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.2*
+All URIs are relative to *https://localhost:8080/willitsync/1.1.1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**get_validate_metadata**](UsersApi.md#get_validate_metadata) | **GET** /scivalid | Retrieve and validate a science metadata XML document
 [**get_validate_so**](UsersApi.md#get_validate_so) | **GET** /sovalid | Retrieve and validate a schema.org JSON-LD document
-[**parse_langingpage**](UsersApi.md#parse_langingpage) | **GET** /so | Extract schema.org metadata
-[**parse_robots**](UsersApi.md#parse_robots) | **GET** /robots | Parses robots.txt to find sitemap(s)
-[**parse_sitemap**](UsersApi.md#parse_sitemap) | **GET** /sitemap | Parses sitemap.xml
-[**validate_metadata**](UsersApi.md#validate_metadata) | **POST** /scivalid | Validate provided schema.org JSON-LD document
+[**parse_landingpage**](UsersApi.md#parse_landingpage) | **GET** /so | Extract schema.org metadata from web page
+[**parse_robots**](UsersApi.md#parse_robots) | **GET** /robots | Retrieve sitemap references from a robots.txt file
+[**parse_sitemap**](UsersApi.md#parse_sitemap) | **GET** /sitemap | Get locatiosn from a sitemap.
+[**validate_metadata**](UsersApi.md#validate_metadata) | **POST** /scivalid | Validate provided science metadata XML document
 [**validate_so**](UsersApi.md#validate_so) | **POST** /sovalid | Validate provided schema.org JSON-LD document
 
 
@@ -72,7 +72,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **get_validate_so**
-> SOMetadata get_validate_so(url, type=type)
+> SOMetadata get_validate_so(url, sotype=sotype)
 
 Retrieve and validate a schema.org JSON-LD document
 
@@ -89,12 +89,12 @@ from pprint import pprint
 
 # Create an instance of the API class
 api_instance = openapi_client.UsersApi()
-url = 'https://my.server.net/data/dataset_1/jsonld.json' # str | URL referencing a schema.org JSON-LD document to retrieve and validate. 
-type = 'Dataset' # str | The name of the schema.org type to test for validity.  (optional) (default to 'Dataset')
+url = 'https://my.server.net/data/dataset_1/jsonld.json' # str | URL referencing a schema.org JSON-LD document or a landing page containing schema.org JSON-LD to retrieve and validate. 
+sotype = 'Dataset' # str | The name of the schema.org type to test for validity.  (optional) (default to 'Dataset')
 
 try:
     # Retrieve and validate a schema.org JSON-LD document
-    api_response = api_instance.get_validate_so(url, type=type)
+    api_response = api_instance.get_validate_so(url, sotype=sotype)
     pprint(api_response)
 except ApiException as e:
     print("Exception when calling UsersApi->get_validate_so: %s\n" % e)
@@ -104,8 +104,8 @@ except ApiException as e:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **url** | **str**| URL referencing a schema.org JSON-LD document to retrieve and validate.  | 
- **type** | **str**| The name of the schema.org type to test for validity.  | [optional] [default to &#39;Dataset&#39;]
+ **url** | **str**| URL referencing a schema.org JSON-LD document or a landing page containing schema.org JSON-LD to retrieve and validate.  | 
+ **sotype** | **str**| The name of the schema.org type to test for validity.  | [optional] [default to &#39;Dataset&#39;]
 
 ### Return type
 
@@ -129,12 +129,12 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **parse_langingpage**
-> SOMetadata parse_langingpage(url)
+# **parse_landingpage**
+> SOMetadata parse_landingpage(url)
 
-Extract schema.org metadata
+Extract schema.org metadata from web page
 
-Parses landing page to extract schema.org metadata 
+Parses landing page to extract schema.org JSON-LD metadata 
 
 ### Example
 
@@ -150,11 +150,11 @@ api_instance = openapi_client.UsersApi()
 url = 'https://my.server.org/data/dataset_1' # str | URL pointing to langing page to be parsed 
 
 try:
-    # Extract schema.org metadata
-    api_response = api_instance.parse_langingpage(url)
+    # Extract schema.org metadata from web page
+    api_response = api_instance.parse_landingpage(url)
     pprint(api_response)
 except ApiException as e:
-    print("Exception when calling UsersApi->parse_langingpage: %s\n" % e)
+    print("Exception when calling UsersApi->parse_landingpage: %s\n" % e)
 ```
 
 ### Parameters
@@ -188,9 +188,9 @@ No authorization required
 # **parse_robots**
 > RobotsFile parse_robots(url)
 
-Parses robots.txt to find sitemap(s)
+Retrieve sitemap references from a robots.txt file
 
-Given a robots.txt file, parse, and retrieve referenced sitemap documents. 
+Given a robots.txt file, parse, and retrieve referenced sitemap locations. 
 
 ### Example
 
@@ -206,7 +206,7 @@ api_instance = openapi_client.UsersApi()
 url = 'https://my.server.org/robots.txt' # str | URL pointing to a robots.txt file
 
 try:
-    # Parses robots.txt to find sitemap(s)
+    # Retrieve sitemap references from a robots.txt file
     api_response = api_instance.parse_robots(url)
     pprint(api_response)
 except ApiException as e:
@@ -244,9 +244,9 @@ No authorization required
 # **parse_sitemap**
 > Sitemap parse_sitemap(url, maxlocs=maxlocs)
 
-Parses sitemap.xml
+Get locatiosn from a sitemap.
 
-Parses a sitemap to retrieve entries.
+Parses a sitemap to retrieve location entries. 
 
 ### Example
 
@@ -259,11 +259,11 @@ from pprint import pprint
 
 # Create an instance of the API class
 api_instance = openapi_client.UsersApi()
-url = 'https://my.server.org/sitemap.xml' # str | URL pointing to a sitemap xml document.
+url = 'https://my.server.org/sitemap.xml' # str | URL pointing to a sitemap xml document
 maxlocs = 100 # int | Maximum number of sitemap locations to return  (optional) (default to 100)
 
 try:
-    # Parses sitemap.xml
+    # Get locatiosn from a sitemap.
     api_response = api_instance.parse_sitemap(url, maxlocs=maxlocs)
     pprint(api_response)
 except ApiException as e:
@@ -274,7 +274,7 @@ except ApiException as e:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **url** | **str**| URL pointing to a sitemap xml document. | 
+ **url** | **str**| URL pointing to a sitemap xml document | 
  **maxlocs** | **int**| Maximum number of sitemap locations to return  | [optional] [default to 100]
 
 ### Return type
@@ -302,7 +302,7 @@ No authorization required
 # **validate_metadata**
 > SCIMetadata validate_metadata(formatid, body)
 
-Validate provided schema.org JSON-LD document
+Validate provided science metadata XML document
 
 Given an XML metadata document, validate the XML. 
 
@@ -321,7 +321,7 @@ formatid = 'http://www.isotc211.org/2005/gmd' # str | The DataONE formatId of th
 body = 'body_example' # str | Science metadata XML document to validate. 
 
 try:
-    # Validate provided schema.org JSON-LD document
+    # Validate provided science metadata XML document
     api_response = api_instance.validate_metadata(formatid, body)
     pprint(api_response)
 except ApiException as e:

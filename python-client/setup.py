@@ -3,7 +3,7 @@
 """
     WillItSync
 
-    Sitemap Checker  # noqa: E501
+    Provides various methods for retrieving, parsing, and validating the  various portions of a web harvesting workflow.   # noqa: E501
 
     The version of the OpenAPI document: 1.1.1
     Contact: jevans97@utk.edu
@@ -35,9 +35,6 @@ setup(
     packages=find_packages(exclude=["test", "tests"]),
     include_package_data=True,
     long_description="""\
-    Sitemap Checker  # noqa: E501
-    """,
-    entry_points = {
-        'console_scripts':['willitsync=openapi_client.__main__:main']
-    }
+    Provides various methods for retrieving, parsing, and validating the  various portions of a web harvesting workflow.   # noqa: E501
+    """
 )

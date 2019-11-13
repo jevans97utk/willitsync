@@ -3,7 +3,7 @@
 """
     WillItSync
 
-    Sitemap Checker  # noqa: E501
+    Provides various methods for retrieving, parsing, and validating the  various portions of a web harvesting workflow.   # noqa: E501
 
     The version of the OpenAPI document: 1.1.1
     Contact: jevans97@utk.edu
@@ -50,7 +50,7 @@ class Configuration(six.with_metaclass(TypeWithDefault, object)):
     :param password: Password for HTTP basic authentication
     """
 
-    def __init__(self, host="https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.2",
+    def __init__(self, host="https://localhost:8080/willitsync/1.1.1",
                  api_key={}, api_key_prefix={},
                  username="", password=""):
         """Constructor
@@ -274,8 +274,8 @@ class Configuration(six.with_metaclass(TypeWithDefault, object)):
         """
         return [
             {
-                'url': "https://virtserver.swaggerhub.com/jevans97utk/willitsync/1.0.2",
-                'description': "SwaggerHub API Auto Mocking",
+                'url': "https://localhost:8080/willitsync/1.1.1",
+                'description': "Development server on localhost",
             }
         ]
 

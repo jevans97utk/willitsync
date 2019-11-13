@@ -2,7 +2,7 @@
 """
     WillItSync
 
-    Sitemap Checker  # noqa: E501
+    Provides various methods for retrieving, parsing, and validating the  various portions of a web harvesting workflow.   # noqa: E501
 
     The version of the OpenAPI document: 1.1.1
     Contact: jevans97@utk.edu
