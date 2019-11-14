@@ -17,7 +17,7 @@ def main(ctx):
     logger.debug("in main()")
     ctx.ensure_object(dict)
     configuration = openapi_client.configuration.Configuration()
-    configuration.host = "http://localhost:8080/jevans97utk/willitsync/1.0.2"
+    configuration.host = "http://localhost:8080/willitsync/1.1.1"
     client = openapi_client.ApiClient(configuration)
     ctx.obj['client'] = openapi_client.DevelopersApi(client)
 

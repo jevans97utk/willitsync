@@ -36,5 +36,8 @@ setup(
     include_package_data=True,
     long_description="""\
     Provides various methods for retrieving, parsing, and validating the  various portions of a web harvesting workflow.   # noqa: E501
-    """
+    """,
+    entry_points = {
+        'console_scripts':['willitsync=openapi_client.__main__:main']
+    }
 )
