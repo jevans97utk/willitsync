@@ -1,4 +1,5 @@
 # standard library imports
+import logging
 import asyncio
 import datetime as dt
 import io
@@ -9,6 +10,7 @@ import time
 # 3rd party library imports
 import lxml.etree
 import requests
+from extruct.jsonld import JsonLdExtractor
 from schema_org.so_core import SchemaDotOrgHarvester
 from pythonjsonlogger import jsonlogger
 import d1_scimeta.validate
@@ -268,7 +270,6 @@ def parse_sitemap(url, maxlocs=None):
     """
     date = get_current_utc_timestamp()
     logobj = CustomJsonLogger()
-
     kwargs = _KWARGS.copy()
     kwargs['sitemap_url'] = url
     kwargs['logger'] = logobj.logger
@@ -292,6 +293,7 @@ def parse_sitemap(url, maxlocs=None):
     }
     s = Sitemap(**kwargs)
     return s, return_status
+
 
 
 def parse_robots(url):
