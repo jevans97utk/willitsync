@@ -40,7 +40,7 @@ Run the server
 ```python
 >>> import requests
 
->>> url = 'http://localhost:8080/jevans97utk/willitsync/1.0.2/robots'
+>>> url = 'http://localhost:8080/willitsync/1.1.1/robots'
 >>> params = {'url':  'https://nytimes.com/robots.txt'}
 >>> r = requests.get(url, params=params)
 >>> r.json()
@@ -56,7 +56,7 @@ Run the server
 ```
 
 ```python
->>> url = 'http://localhost:8080/jevans97utk/willitsync/1.0.2/so'
+>>> url = 'http://localhost:8080/willitsync/1.1.1/so'
 >>> params = {'url': 'https://www.archive.arm.gov/metadata/html/pghnoaaaosM1.b1.html'}
 >>> r = requests.get(url, params=params) 
 >>> r.json()['metadata']
