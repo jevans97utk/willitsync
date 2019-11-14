@@ -23,25 +23,25 @@ def get_validate_metadata(url, formatid):  # noqa: E501
     return 'do some magic!'
 
 
-def get_validate_so(url, type=None):  # noqa: E501
+def get_validate_so(url, sotype=None):  # noqa: E501
     """Retrieve and validate a schema.org JSON-LD document
 
     Given a url referencing a schema.org JSON-LD document, verify that  the structure matches expected model indicated in the type parameter.  # noqa: E501
 
-    :param url: URL referencing a schema.org JSON-LD document to retrieve and validate. 
+    :param url: URL referencing a schema.org JSON-LD document or a landing page containing schema.org JSON-LD to retrieve and validate. 
     :type url: str
-    :param type: The name of the schema.org type to test for validity. 
-    :type type: str
+    :param sotype: The name of the schema.org type to test for validity. 
+    :type sotype: str
 
     :rtype: SOMetadata
     """
     return 'do some magic!'
 
 
-def parse_langingpage(url):  # noqa: E501
-    """Extract schema.org metadata
+def parse_landingpage(url):  # noqa: E501
+    """Extract schema.org metadata from web page
 
-    Parses landing page to extract schema.org metadata  # noqa: E501
+    Parses landing page to extract schema.org JSON-LD metadata  # noqa: E501
 
     :param url: URL pointing to langing page to be parsed 
     :type url: str
@@ -52,9 +52,9 @@ def parse_langingpage(url):  # noqa: E501
 
 
 def parse_robots(url):  # noqa: E501
-    """Parses robots.txt to find sitemap(s)
+    """Retrieve sitemap references from a robots.txt file
 
-    Given a robots.txt file, parse, and retrieve referenced sitemap documents.  # noqa: E501
+    Given a robots.txt file, parse, and retrieve referenced sitemap locations.  # noqa: E501
 
     :param url: URL pointing to a robots.txt file
     :type url: str
@@ -65,11 +65,11 @@ def parse_robots(url):  # noqa: E501
 
 
 def parse_sitemap(url, maxlocs=None):  # noqa: E501
-    """Parses sitemap.xml
+    """Get locatiosn from a sitemap.
 
-    Parses a sitemap to retrieve entries. # noqa: E501
+    Parses a sitemap to retrieve location entries.  # noqa: E501
 
-    :param url: URL pointing to a sitemap xml document.
+    :param url: URL pointing to a sitemap xml document
     :type url: str
     :param maxlocs: Maximum number of sitemap locations to return 
     :type maxlocs: int
@@ -80,7 +80,7 @@ def parse_sitemap(url, maxlocs=None):  # noqa: E501
 
 
 def validate_metadata(formatid, body):  # noqa: E501
-    """Validate provided schema.org JSON-LD document
+    """Validate provided science metadata XML document
 
     Given an XML metadata document, validate the XML.  # noqa: E501
 
