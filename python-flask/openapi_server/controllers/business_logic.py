@@ -4,7 +4,6 @@ import asyncio
 import datetime as dt
 import io
 import json
-import logging
 import time
 
 # 3rd party library imports
@@ -280,7 +279,9 @@ def parse_sitemap(url, maxlocs=None):
     asyncio.run(obj.run())
 
     sitemaps = obj.get_sitemaps()
+
     urlset = obj.get_sitemaps_urlset()
+    urlset = [{'url': item[0], 'lastmod': item[1]} for item in urlset]
 
     logs = logobj.get_log_messages()
     return_status = logobj.get_return_status()
@@ -293,7 +294,6 @@ def parse_sitemap(url, maxlocs=None):
     }
     s = Sitemap(**kwargs)
     return s, return_status
-
 
 
 def parse_robots(url):

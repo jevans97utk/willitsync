@@ -830,7 +830,7 @@ class TestDevelopersController(WillItSyncTestCase):
         now = dt.datetime.utcnow().replace(tzinfo=dt.timezone.utc)
         sitemaps_urlset = [
             ('https://www.nytimes.com/stuff_happened.html', now),
-            ('https://www.nytimes.com/and_then_some.html', now)
+            ('https://www.nytimes.com/and_then_some.html', now),
         ]
         self.setup_so_patcher(sitemaps=sitemaps,
                               sitemaps_urlset=sitemaps_urlset)
@@ -850,11 +850,11 @@ class TestDevelopersController(WillItSyncTestCase):
 
         j = json.loads(response.data.decode('utf-8'))
 
-        expected = sitemaps
         self.assertEqual(j['sitemaps'], sitemaps)
 
         expected = [
-            [item[0], item[1].isoformat()] for item in sitemaps_urlset
+            {'url': item[0], 'lastmod': item[1].isoformat()}
+            for item in sitemaps_urlset
         ]
         self.assertEqual(j['urlset'], expected)
 
