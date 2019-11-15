@@ -69,16 +69,12 @@ def scivalid(ctx, file, formatid):
 
 @main.command()
 @click.pass_context
-@click.option('-u', '--url', required=True, help='Url to try')
-@click.option('-s', '--sotype', required=False, default="Dataset",
-              help="The name of the schema.org type to test for validity.")
-def get_so(ctx, url, sotype):
-    msg = (
-        f"Calling get_validate_so with url = {url} and with "
-        f"sotype = {sotype}."
-    )
+@click.option('-u', '--url', required=True,
+              help='URL of landing page to try')
+def get_so(ctx, url):
+    msg = f"Calling parse_landing_page with url = {url}"
     logger.debug(msg)
-    result = ctx.obj['client'].get_validate_so(url, sotype=sotype)
+    result = ctx.obj['client'].parse_landing_page(url)
     pprint(result)
 
 
@@ -91,7 +87,7 @@ def get_so(ctx, url, sotype):
                   "The name of the schema.org type to test for validity "
                   "(default is \"Dataset\")"
               ))
-def so(ctx, file, sotype):
+def sovalid(ctx, file, sotype):
     msg = (
         f"Calling validate_so with file = {file} and with "
         f"sotype = {sotype}."
@@ -148,15 +144,6 @@ def get_sovalid(ctx, url):
     result = ctx.obj['client'].get_validate_so(url)
     pprint(result)
 
-
-@main.command()
-@click.pass_context
-@click.option('-f', '--file', type=click.Path(exists=True), required=True,
-              help='Path to XML metadata document')
-def sovalid(ctx, url):
-    logger.debug(f'Calling so with file = {file}')
-    result = ctx.obj['client'].validate_so(url)
-    pprint(result)
 
 
 if __name__ == "__main__":
