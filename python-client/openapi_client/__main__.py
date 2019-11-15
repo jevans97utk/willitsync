@@ -2,6 +2,7 @@
 """
 # Standard library imports
 import datetime as dt
+import json
 import sys
 import logging
 from pprint import pprint
@@ -80,37 +81,6 @@ def get_so(ctx, url):
 
 @main.command()
 @click.pass_context
-@click.option('-f', '--file', type=click.Path(exists=True), required=True,
-              help='Path to local file (landing page)')
-@click.option('-s', '--sotype', required=False, default="Dataset",
-              help=(
-                  "The name of the schema.org type to test for validity "
-                  "(default is \"Dataset\")"
-              ))
-def sovalid(ctx, file, sotype):
-    msg = (
-        f"Calling validate_so with file = {file} and with "
-        f"sotype = {sotype}."
-    )
-    logger.debug(msg)
-
-
-    with open(file, mode='rt') as f:
-        txt = f.read()
-    doc = lxml.etree.HTML(txt)
-
-    body = {
-        'evaluated_date': dt.datetime.now(),
-        'log': None,
-        'url': '',
-        'metadata': jsonld,
-    }
-    result = ctx.obj['client'].validate_so(body, type=sotype)
-    pprint(result)
-
-
-@main.command()
-@click.pass_context
 @click.option('-u', '--url', required=True, help='Url to try')
 def robot(ctx, url):
     logger.debug("Calling robot with url = " + str(url))
@@ -139,6 +109,43 @@ def get_sovalid(ctx, url):
     logger.debug(f'Calling so with url = {url}')
     result = ctx.obj['client'].get_validate_so(url)
     pprint(result)
+
+
+@main.command()
+@click.pass_context
+@click.option('-f', '--file', type=click.Path(exists=True), required=True,
+              help='Path to local file (landing page or JSON-LD')
+@click.option('-s', '--sotype', required=False, default="Dataset",
+              help=(
+                  "The name of the schema.org type to test for validity "
+                  "(default is \"Dataset\")"
+              ))
+def sovalid(ctx, file, sotype):
+    msg = (
+        f"Calling validate_so with file = {file} and with "
+        f"sotype = {sotype}."
+    )
+    logger.debug(msg)
+
+
+    with open(file, mode='rt') as f:
+        text = f.read()
+
+    try:
+        data = json.loads(text)
+    except:
+        # Assume it is HTML.
+        data = text
+
+    body = {
+        'evaluated_date': dt.datetime.now(),
+        'log': None,
+        'url': '',
+        'metadata': data,
+    }
+    result = ctx.obj['client'].validate_so(body, type=sotype)
+    pprint(result)
+
 
 
 
