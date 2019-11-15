@@ -132,9 +132,19 @@ def so(ctx, url):
 @main.command()
 @click.pass_context
 @click.option('-u', '--url', required=True, help='Url to try')
-def sovalid(ctx, url):
+def get_sovalid(ctx, url):
     logger.debug(f'Calling so with url = {url}')
     result = ctx.obj['client'].get_validate_so(url)
+    pprint(result)
+
+
+@main.command()
+@click.pass_context
+@click.option('-f', '--file', type=click.Path(exists=True), required=True,
+              help='Path to XML metadata document')
+def sovalid(ctx, url):
+    logger.debug(f'Calling so with file = {file}')
+    result = ctx.obj['client'].validate_so(url)
     pprint(result)
 
 

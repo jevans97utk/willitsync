@@ -23,10 +23,110 @@ from .test_core import WillItSyncTestCase
 class TestDevelopersController(WillItSyncTestCase):
     """DevelopersController integration test stubs"""
 
+    def test__post__validate_metadata(self):
+        """
+        SCENARIO:  We are given a POST /scivalid call with valid metadata in
+        the request body.  The query parameters include a valid formatID.
+
+        EXPECTED RESULT:  A 200 status code.  We can load the response body
+        into a SCIMetadata object.
+        """
+        content = ir.read_text('openapi_server.test.data.arm',
+                               'nsaqcrad1longC2.c2.xml')
+
+        query_string = [
+            ('formatid', 'http://www.isotc211.org/2005/gmd')
+        ]
+
+        request_headers = {'Accept': 'text/xml'}
+
+        response = self.client.open(
+            '/willitsync/1.1.1/scivalid',
+            method='POST',
+            headers=request_headers,
+            query_string=query_string,
+            data=content,
+            content_type='text/xml')
+
+        text = response.data.decode('utf-8')
+        self.assert200(response, 'Response body is : ' + text)
+
+        # Verify that we can form an SOMetadata object out of the reponse
+        j = json.loads(text)
+        SCIMetadata(*j)
+        self.assertTrue(True)
+
+    def test__post__validate_metadata__wrong_format(self):
+        """
+        SCENARIO:  We are given a POST /scivalid call with valid metadata in
+        the request body.  The query parameters includes the wrong formatID.
+
+        EXPECTED RESULT:  A 400 status code.  We can load the response body
+        into a SCIMetadata object.
+        """
+        content = ir.read_text('openapi_server.test.data.arm',
+                               'nsaqcrad1longC2.c2.xml')
+
+        query_string = [
+            ('formatid', 'eml://ecoinformatics.org/eml-2.0.1'),
+        ]
+
+        request_headers = {'Accept': 'text/xml'}
+
+        response = self.client.open(
+            '/willitsync/1.1.1/scivalid',
+            method='POST',
+            headers=request_headers,
+            query_string=query_string,
+            data=content,
+            content_type='text/xml')
+
+        text = response.data.decode('utf-8')
+        self.assert400(response, 'Response body is : ' + text)
+
+        # Verify that we can form an SOMetadata object out of the reponse
+        j = json.loads(text)
+        SCIMetadata(*j)
+        self.assertTrue(True)
+
+    def test__post__validate_metadata__unparseable_xml(self):
+        """
+        SCENARIO:  We are given a POST /scivalid call with unparseable
+        metadata in the request body.  The query parameters include a valid
+        formatID.
+
+        EXPECTED RESULT:  A 400 status code.  We can load the response body
+        into a SCIMetadata object.
+        """
+        content = ir.read_text('openapi_server.test.data.arm',
+                               'nsaqcrad1longC2.c2.invalid.xml')
+
+        query_string = [
+            ('formatid', 'http://www.isotc211.org/2005/gmd')
+        ]
+
+        request_headers = {'Accept': 'text/xml'}
+
+        response = self.client.open(
+            '/willitsync/1.1.1/scivalid',
+            method='POST',
+            headers=request_headers,
+            query_string=query_string,
+            data=content,
+            content_type='text/xml')
+
+        text = response.data.decode('utf-8')
+        self.assert400(response, 'Response body is : ' + text)
+
+        # Verify that we can form an SOMetadata object out of the reponse
+        j = json.loads(text)
+        SCIMetadata(*j)
+        self.assertTrue(True)
+
     def test_get_validate_metadata(self):
         """
         SCENARIO:  We are given a valid URL leading to a valid metadata
-        document, along with aa valid formatID.
+        document, along with a valid formatID.
 
         EXPECTED RESULT:  A 200 status code.  We can load the response body
         into a SCIMetadata object.

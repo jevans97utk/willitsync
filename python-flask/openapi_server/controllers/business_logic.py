@@ -109,6 +109,64 @@ def get_validate_metadata(url, formatid):
         return scimetadata, return_status
 
 
+def validate_metadata(formatid, body):
+    """Validate a science metadata XML document
+
+    Given a url referencing an XML metadata document, retrieve and validate the
+    XML.  This corresponds to the /scimeta POST endpoint.
+
+    Parameters
+    ----------
+    body : str
+        
+        URL referencing a science metadata XML document to retrieve and
+        validate.
+    formatid : str
+        The DataONE formatId of the XML to test for validity.
+
+    Returns
+    -------
+    SCIMetadata, HTTP status_code
+    """
+    date = get_current_utc_timestamp()
+    logobj = CustomJsonLogger()
+
+    obj = SchemaDotOrgHarvester(logger=logobj.logger, **_KWARGS)
+
+    kwargs = {
+        'url': '',
+        'evaluated_date': date,
+        'log': None,
+        'metadata': None,
+    }
+
+    # Decode the document.
+    try:
+        doc = lxml.etree.parse(io.BytesIO(body))
+    except Exception as e:
+        logobj.logger.error(str(e))
+        logs = logobj.get_log_messages()
+        kwargs['log'] = logs
+        scimetadata = SCIMetadata(**kwargs)
+        return scimetadata, 400
+    else:
+        # So we know we have a valid XML document now.
+        kwargs['metadata'] = lxml.etree.tostring(doc).decode('utf-8')
+
+    # And finally, validate.
+    try:
+        d1_scimeta.validate.assert_valid(formatid, doc)
+    except Exception as e:
+        logobj.logger.error(str(e))
+        return_status = 400
+    else:
+        return_status = 200
+    finally:
+        kwargs['log'] = logobj.get_log_messages()
+        scimetadata = SCIMetadata(**kwargs)
+        return scimetadata, return_status
+
+
 def validate_so(body, type_=None):
     """
     Business logic for validating a (hopefully) dataone Schema.org JSON-LD
