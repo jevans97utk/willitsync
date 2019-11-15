@@ -37,7 +37,7 @@ def main(ctx):
 @click.option('-f', '--formatid', required=False,
               default="http://www.isotc211.org/2005/gmd",
               help="ID for metadata standard")
-def get_validate_metadata(ctx, url, formatid):
+def get_scivalid(ctx, url, formatid):
     msg = (
         f"Calling get_validate_metadata with url = {url} and with "
         f"format ID = {formatid}."
@@ -49,10 +49,30 @@ def get_validate_metadata(ctx, url, formatid):
 
 @main.command()
 @click.pass_context
+@click.option('--file', type=click.Path(exists=True), required=True,
+              help='Path to local file (landing page)')
+@click.option('--formatid', required=True,
+              help="ID for metadata standard")
+def scivalid(ctx, file, formatid):
+    msg = (
+        f"Calling validate_metadata with file = {file} and with "
+        f"format ID = {formatid}."
+    )
+    logger.debug(msg)
+
+    with open(file, mode='rt') as f:
+        txt = f.read()
+
+    result = ctx.obj['client'].validate_metadata(formatid, txt)
+    pprint(result)
+
+
+@main.command()
+@click.pass_context
 @click.option('-u', '--url', required=True, help='Url to try')
 @click.option('-s', '--sotype', required=False, default="Dataset",
               help="The name of the schema.org type to test for validity.")
-def get_validate_so(ctx, url, sotype):
+def get_so(ctx, url, sotype):
     msg = (
         f"Calling get_validate_so with url = {url} and with "
         f"sotype = {sotype}."
@@ -71,7 +91,7 @@ def get_validate_so(ctx, url, sotype):
                   "The name of the schema.org type to test for validity "
                   "(default is \"Dataset\")"
               ))
-def validate_so(ctx, file, sotype):
+def so(ctx, file, sotype):
     msg = (
         f"Calling validate_so with file = {file} and with "
         f"sotype = {sotype}."
@@ -117,15 +137,6 @@ def robot(ctx, url):
 def sitemap(ctx, url, maxentries):
     logger.debug(f'calling sitemap with url={url} and maxentries={maxentries}')
     result = ctx.obj['client'].parse_sitemap(url, maxlocs=maxentries)
-    pprint(result)
-
-
-@main.command()
-@click.pass_context
-@click.option('-u', '--url', required=True, help='URL of landing page to try')
-def so(ctx, url):
-    logger.debug(f'Calling so with url = {url}')
-    result = ctx.obj['client'].parse_landingpage(url)
     pprint(result)
 
 
