@@ -279,7 +279,7 @@ class TestDevelopersController(WillItSyncTestCase):
         SCIMetadata(*j)
         self.assertTrue(True)
 
-    def test_get_validate_so__bad_type(self):
+    def test__get__validate_so__bad_type(self):
         """
         SCENARIO:  We are given a GET request for a schema.org landing page
         that has valid JSON-LD, but an invalid type argument is given.
@@ -460,7 +460,7 @@ class TestDevelopersController(WillItSyncTestCase):
         json.load(io.BytesIO(response.data))
         self.assertTrue(True)
 
-    def test_post_validate(self):
+    def test_post__sovalid__json(self):
         """
         SCENARIO:  We are given a POST request for a valid schema.org JSON-LD
         object.
@@ -500,7 +500,85 @@ class TestDevelopersController(WillItSyncTestCase):
         actual = json.load(io.BytesIO(response.data))
         self.assertEqual(actual['metadata'], payload['metadata'])
 
-    def test_post_validate__type_is_bad(self):
+    def test_post__sovalid__html(self):
+        """
+        SCENARIO:  We are given a POST request for a valid schema.org landing
+        page..
+
+        EXPECTED RESULT:  The schema.org metadata is returned in the body
+        of the response with a 200 status code.
+        """
+        payload = {}
+        payload['url'] = 'http://somewhere.out.there.com'
+        payload['evaluated_date'] = dt.datetime \
+                                      .utcnow() \
+                                      .replace(tzinfo=dt.timezone.utc) \
+                                      .isoformat()
+        payload['log'] = None
+        text = ir.read_text('openapi_server.test.data.arm',
+                            'nsanimfraod1michC2.c1.html')
+        payload['metadata'] = text
+
+        self.setup_requests_patcher(200, text.encode('utf-8'))
+
+        headers = {
+            'Accept': 'application/json',
+            'Content-type': 'text/html',
+        }
+        response = self.client.open(
+            '/willitsync/1.1.1/sovalid',
+            method='POST',
+            headers=headers,
+            data=json.dumps(payload),
+            content_type='application/json')
+
+        
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+        actual = json.load(io.BytesIO(response.data))
+        self.assertEqual(actual['metadata'], payload['metadata'])
+
+    def test_post__sovalid__xml(self):
+        """
+        SCENARIO:  We are given a POST request for an XML document.
+        page..
+
+        EXPECTED RESULT:  The schema.org metadata is returned in the body
+        of the response with a 400 status code.
+        """
+        payload = {}
+        payload['url'] = 'http://somewhere.out.there.com'
+        payload['evaluated_date'] = dt.datetime \
+                                      .utcnow() \
+                                      .replace(tzinfo=dt.timezone.utc) \
+                                      .isoformat()
+        payload['log'] = None
+        text = ir.read_text('openapi_server.test.data.arm',
+                            'nsaqcrad1longC2.c2.xml')
+        payload['metadata'] = text
+
+        self.setup_requests_patcher(200, text)
+
+        headers = {
+            'Accept': 'application/json',
+            'Content-type': 'text/xml',
+        }
+        response = self.client.open(
+            '/willitsync/1.1.1/sovalid',
+            method='POST',
+            headers=headers,
+            data=json.dumps(payload),
+            content_type='application/json')
+
+        
+        self.assert400(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+        actual = json.load(io.BytesIO(response.data))
+        self.assertEqual(actual['metadata'], payload['metadata'])
+
+    def test__post__sovalid__type_is_bad(self):
         """
         SCENARIO:  We are given a POST request for a valid schema.org JSON-LD
         object, but the type parameter is bad.

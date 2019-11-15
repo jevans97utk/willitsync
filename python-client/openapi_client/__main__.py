@@ -99,10 +99,6 @@ def sovalid(ctx, file, sotype):
         txt = f.read()
     doc = lxml.etree.HTML(txt)
 
-    kwargs = {'no_harvest': True, 'ignore_harvest_time': True}
-    harvester = SchemaDotOrgHarvester(**kwargs)
-    jsonld = harvester.get_jsonld(doc)
-
     body = {
         'evaluated_date': dt.datetime.now(),
         'log': None,

@@ -9,7 +9,6 @@ import time
 # 3rd party library imports
 import lxml.etree
 import requests
-from extruct.jsonld import JsonLdExtractor
 from schema_org.so_core import SchemaDotOrgHarvester
 from pythonjsonlogger import jsonlogger
 import d1_scimeta.validate
@@ -118,7 +117,6 @@ def validate_metadata(formatid, body):
     Parameters
     ----------
     body : str
-        
         URL referencing a science metadata XML document to retrieve and
         validate.
     formatid : str
@@ -130,8 +128,6 @@ def validate_metadata(formatid, body):
     """
     date = get_current_utc_timestamp()
     logobj = CustomJsonLogger()
-
-    obj = SchemaDotOrgHarvester(logger=logobj.logger, **_KWARGS)
 
     kwargs = {
         'url': '',
@@ -184,37 +180,55 @@ def validate_so(body, type_=None):
     SOMetadata, HTTP status code
     """
     date = get_current_utc_timestamp()
-    j = body['metadata']
 
     logobj = CustomJsonLogger()
-
-    if type_ != 'Dataset':
-        msg = f"Unsupported SO JSON-LD type \"{type_}\""
-        logobj.logger.error(msg)
-        logs = logobj.get_log_messages()
-        return_status = 400
-    else:
-        obj = SchemaDotOrgHarvester(sitemap_url=None, logger=logobj.logger,
-                                    **_KWARGS)
-
-        try:
-            obj.validate_dataone_so_jsonld(j)
-        except Exception as e:
-            # Log the exception.
-            obj.logger.error(str(e))
-            return_status = 400
-        else:
-            return_status = 200
-        finally:
-            # Always retrieve the logs no matter what.
-            logs = logobj.get_log_messages()
 
     kwargs = {
         'url': body['url'],
         'evaluated_date': date,
-        'log': logs,
-        'metadata': j,
+        'log': None,
+        'metadata': body['metadata']
     }
+
+    if type_ != 'Dataset':
+        msg = f"Unsupported SO JSON-LD type \"{type_}\""
+        logobj.logger.error(msg)
+        kwargs['log'] = logobj.get_log_messages()
+        so_metadata = SOMetadata(**kwargs)
+        return so_metadata, 400
+
+    obj = SchemaDotOrgHarvester(sitemap_url=None, logger=logobj.logger,
+                                **_KWARGS)
+
+    if isinstance(body['metadata'], str):
+        # Assume string.
+        try:
+            doc = lxml.etree.HTML(body['metadata'])
+            jsonld = obj.get_jsonld(doc)
+        except:  # noqa : E722
+            # Unable to retrieve any JSON-LD.
+            kwargs['log'] = logobj.get_log_messages()
+            so_metadata = SOMetadata(**kwargs)
+            return so_metadata, 400
+    elif isinstance(body['metadata'], dict):
+        jsonld = body['metadata']
+    else:
+        obj.logger.error('Not given either an HTML page or JSON.')
+        kwargs['log'] = logobj.get_log_messages()
+        so_metadata = SOMetadata(**kwargs)
+        return so_metadata, 400
+
+    try:
+        obj.validate_dataone_so_jsonld(jsonld)
+    except Exception as e:
+        obj.logger.error(str(e))
+        return_status = 400
+    else:
+        return_status = 200
+    finally:
+        # Always retrieve the logs no matter what.
+        kwargs['log'] = logobj.get_log_messages()
+
     so_metadata = SOMetadata(**kwargs)
 
     return so_metadata, return_status
