@@ -1,11 +1,19 @@
 """
 """
+# Standard library imports
+import datetime as dt
 import sys
 import logging
+from pprint import pprint
+
+# 3rd party library imports
 import click
 import click_log
+import lxml.etree
 import openapi_client
-from pprint import pprint
+
+# Local imports
+from schema_org.so_core import SchemaDotOrgHarvester
 
 logger = logging.getLogger(__name__)
 click_log.basic_config(logger)
@@ -51,6 +59,41 @@ def get_validate_so(ctx, url, sotype):
     )
     logger.debug(msg)
     result = ctx.obj['client'].get_validate_so(url, sotype=sotype)
+    pprint(result)
+
+
+@main.command()
+@click.pass_context
+@click.option('-f', '--file', type=click.Path(exists=True), required=True,
+              help='Path to local file (landing page)')
+@click.option('-s', '--sotype', required=False, default="Dataset",
+              help=(
+                  "The name of the schema.org type to test for validity "
+                  "(default is \"Dataset\")"
+              ))
+def validate_so(ctx, file, sotype):
+    msg = (
+        f"Calling validate_so with file = {file} and with "
+        f"sotype = {sotype}."
+    )
+    logger.debug(msg)
+
+
+    with open(file, mode='rt') as f:
+        txt = f.read()
+    doc = lxml.etree.HTML(txt)
+
+    kwargs = {'no_harvest': True, 'ignore_harvest_time': True}
+    harvester = SchemaDotOrgHarvester(**kwargs)
+    jsonld = harvester.get_jsonld(doc)
+
+    body = {
+        'evaluated_date': dt.datetime.now(),
+        'log': None,
+        'url': '',
+        'metadata': jsonld,
+    }
+    result = ctx.obj['client'].validate_so(body, type=sotype)
     pprint(result)
 
 

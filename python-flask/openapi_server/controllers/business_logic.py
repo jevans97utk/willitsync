@@ -152,7 +152,7 @@ def validate_so(body, type_=None):
             logs = logobj.get_log_messages()
 
     kwargs = {
-        'url': None,
+        'url': body['url'],
         'evaluated_date': date,
         'log': logs,
         'metadata': j,
