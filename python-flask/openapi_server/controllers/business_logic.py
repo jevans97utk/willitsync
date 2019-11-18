@@ -41,7 +41,7 @@ def get_validate_metadata(url, formatid):
     """Retrieve and validate a science metadata XML document
 
     Given a url referencing an XML metadata document, retrieve and validate the
-    XML.  This corresponds to the /scimeta GET endpoint.
+    XML.  This corresponds to the /scivalid GET endpoint.
 
     Parameters
     ----------
@@ -81,31 +81,11 @@ def get_validate_metadata(url, formatid):
         # If we could not retrieve the URL, then it is a 404.
         return scimetadata, 404
 
-    # Decode the document.
-    try:
-        doc = lxml.etree.parse(io.BytesIO(content))
-    except Exception as e:
-        logobj.logger.error(str(e))
-        logs = logobj.get_log_messages()
-        kwargs['log'] = logs
-        scimetadata = SCIMetadata(**kwargs)
-        return scimetadata, 400
-    else:
-        # So we know we have a valid XML document now.
-        kwargs['metadata'] = lxml.etree.tostring(doc).decode('utf-8')
-
-    # And finally, validate.
-    try:
-        d1_scimeta.validate.assert_valid(formatid, doc)
-    except Exception as e:
-        logobj.logger.error(str(e))
-        return_status = 400
-    else:
-        return_status = 200
-    finally:
-        kwargs['log'] = logobj.get_log_messages()
-        scimetadata = SCIMetadata(**kwargs)
-        return scimetadata, return_status
+    scimetadata, return_status = _scimeta_decode_and_validate(content,
+                                                              formatid,
+                                                              kwargs,
+                                                              logobj)
+    return scimetadata, return_status
 
 
 def validate_metadata(formatid, body):
@@ -116,11 +96,15 @@ def validate_metadata(formatid, body):
 
     Parameters
     ----------
+    content : bytes
+        sequence of bytes corresponding to the XML metadata
     body : str
         URL referencing a science metadata XML document to retrieve and
         validate.
     formatid : str
         The DataONE formatId of the XML to test for validity.
+    logobj : object
+        custom logger
 
     Returns
     -------
@@ -136,9 +120,38 @@ def validate_metadata(formatid, body):
         'metadata': None,
     }
 
+    scimetadata, return_status = _scimeta_decode_and_validate(body,
+                                                              formatid,
+                                                              kwargs,
+                                                              logobj)
+    return scimetadata, return_status
+
+
+def _scimeta_decode_and_validate(content, formatid, kwargs, logobj):
+    """
+    Decode the raw bytes into XML and validate according to the format ID.
+
+    Parameters
+    ----------
+    content : bytes
+        sequence of raw bytes that should be parseable into XML
+    formatid : str
+        validate the XML according to this standard
+    kwargs : dict
+        keyword arguments that will be used to contruct a SCIMeta object for
+        return
+
+    Returns
+    -------
+    scimetadata : SCIMetadata object
+        Flask will re-encode this into the JSON in the HTTP response
+    return_status : int
+        HTTP return code
+    """
+
     # Decode the document.
     try:
-        doc = lxml.etree.parse(io.BytesIO(body))
+        doc = lxml.etree.parse(io.BytesIO(content))
     except Exception as e:
         logobj.logger.error(str(e))
         logs = logobj.get_log_messages()
@@ -170,8 +183,8 @@ def validate_so(body, type_=None):
 
     Parameters
     ----------
-    body : object
-        content-type:  application/json
+    body : dict
+        body['metadata'] is either str(HTML) or obj(JSON)
     sotype : str
         Hopefully 'Dataset'
 
@@ -197,40 +210,24 @@ def validate_so(body, type_=None):
         so_metadata = SOMetadata(**kwargs)
         return so_metadata, 400
 
-    obj = SchemaDotOrgHarvester(sitemap_url=None, logger=logobj.logger,
-                                **_KWARGS)
+    harvester = SchemaDotOrgHarvester(sitemap_url=None, logger=logobj.logger,
+                                      **_KWARGS)
 
     if isinstance(body['metadata'], str):
-        # Assume string.
         try:
             doc = lxml.etree.HTML(body['metadata'])
-            jsonld = obj.get_jsonld(doc)
-        except:  # noqa : E722
-            # Unable to retrieve any JSON-LD.
+            jsonld = harvester.get_jsonld(doc)
+        except Exception as e:
+            msg = f"Could not parse HTML from {body['metadata']}:  {str(e)}"
+            logobj.logger.error(msg)
             kwargs['log'] = logobj.get_log_messages()
             so_metadata = SOMetadata(**kwargs)
             return so_metadata, 400
-    elif isinstance(body['metadata'], dict):
+    else:
         jsonld = body['metadata']
-    else:
-        obj.logger.error('Not given either an HTML page or JSON.')
-        kwargs['log'] = logobj.get_log_messages()
-        so_metadata = SOMetadata(**kwargs)
-        return so_metadata, 400
 
-    try:
-        obj.validate_dataone_so_jsonld(jsonld)
-    except Exception as e:
-        obj.logger.error(str(e))
-        return_status = 400
-    else:
-        return_status = 200
-    finally:
-        # Always retrieve the logs no matter what.
-        kwargs['log'] = logobj.get_log_messages()
-
-    so_metadata = SOMetadata(**kwargs)
-
+    so_metadata, return_status = _validate_so(jsonld, kwargs, harvester,
+                                              logobj)
     return so_metadata, return_status
 
 
@@ -247,71 +244,90 @@ def get_validate_so(url, sotype=None):
     date = get_current_utc_timestamp()
     jsonld = None
 
+    kwargs = {
+        'url': url,
+        'evaluated_date': date,
+        'log': None,
+        'metadata': None,
+    }
+
     if sotype != 'Dataset':
 
         msg = f'Unsupported SO JSON-LD type {sotype}.'
         logobj.logger.error(msg)
-        logs = logobj.get_log_messages()
 
-        kwargs = {
-            'url': url,
-            'evaluated_date': date,
-            'log': logs,
-            'metadata': jsonld,
-        }
+        kwargs['log'] = logobj.get_log_messages()
         so_metadata = SOMetadata(**kwargs)
 
         return so_metadata, 400
 
-    obj = SchemaDotOrgHarvester(sitemap_url=url, logger=logobj.logger,
-                                **_KWARGS)
+    harvester = SchemaDotOrgHarvester(sitemap_url=None, logger=logobj.logger,
+                                      **_KWARGS)
 
     # Ok, so try to retrieve the document.
     try:
-        content, headers = asyncio.run(obj.retrieve_url(url))
+        content, headers = asyncio.run(harvester.retrieve_url(url))
     except Exception as e:
 
         # Log the exception.
-        obj.logger.error(str(e))
+        logobj.logger.error(str(e))
 
         # Always retrieve the logs no matter what.
-        logs = logobj.get_log_messages()
-
-        kwargs = {
-            'url': url,
-            'evaluated_date': date,
-            'log': logs,
-            'metadata': jsonld,
-        }
+        kwargs['log'] = logobj.get_log_messages()
         so_metadata = SOMetadata(**kwargs)
 
         return so_metadata, 404
 
-    # And finally, parse and validate the document
     try:
-        if 'text/html' in headers['Content-Type']:
-            # It's a landing page.
+        # Try to load the JSON content directly.
+        jsonld = json.loads(content.decode('utf-8'))
+    except Exception:
+        # It's not loadable as JSON.  Try as HTML.
+        try:
             doc = lxml.etree.HTML(content)
-            jsonld = obj.get_jsonld(doc)
-        elif headers['Content-Type'] == 'application/json':
-            # It's a JSON-LD document.
-            jsonld = json.load(io.BytesIO(content))
-        obj.validate_dataone_so_jsonld(jsonld)
+            jsonld = harvester.get_jsonld(doc)
+        except Exception as e:
+            msg = (
+                f"GET data was neither JSON nor an HTML landing page with"
+                f"embedded JSON-LD:  {str(e)}"
+            )
+            logobj.logger.error(msg)
+
+            kwargs['log'] = logobj.get_log_messages()
+            so_metadata = SOMetadata(**kwargs)
+
+            return so_metadata, 400
+
+    so_metadata, return_status = _validate_so(jsonld,
+                                              kwargs,
+                                              harvester, logobj)
+    return so_metadata, return_status
+
+
+def _validate_so(jsonld, kwargs, harvester, logobj):
+    """
+    Parameters
+    ----------
+    content : str(HTML) or obj(JSON)
+        Try to turn this into XML, either as a string or JSON.
+    """
+
+    # Load up the presumed metadata now, just in case we run into an error
+    # later.
+    kwargs['metadata'] = jsonld
+
+    try:
+        harvester.validate_dataone_so_jsonld(jsonld)
     except Exception as e:
-        obj.logger.error(str(e))
+        harvester.logger.error(str(e))
         return_status = 400
     else:
         return_status = 200
     finally:
         # Always retrieve the logs no matter what.
-        logs = logobj.get_log_messages()
+        kwargs['log'] = logobj.get_log_messages()
+        kwargs['metadata'] = jsonld
 
-    kwargs = {
-        'url': url,
-        'evaluated_date': date,
-        'log': logs,
-        'metadata': jsonld,
-    }
     so_metadata = SOMetadata(**kwargs)
 
     return so_metadata, return_status

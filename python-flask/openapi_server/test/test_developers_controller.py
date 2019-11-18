@@ -315,7 +315,7 @@ class TestDevelopersController(WillItSyncTestCase):
         SOMetadata(*j)
         self.assertTrue(True)
 
-    def test_get_validate_so__json__no_type(self):
+    def test__sovalid__get__json__no_type(self):
         """
         SCENARIO:  We are given a GET request for a schema.org JSON-LD
         document that is valid.  No type is given.
@@ -351,7 +351,7 @@ class TestDevelopersController(WillItSyncTestCase):
         json.load(io.BytesIO(response.data))
         self.assertTrue(True)
 
-    def test_get_validate_so__json__404(self):
+    def test__sovalid__get__json__404(self):
         """
         SCENARIO:  We are given a GET request for a schema.org JSON-LD
         document that is not present.  No type is given.
@@ -385,7 +385,7 @@ class TestDevelopersController(WillItSyncTestCase):
         json.load(io.BytesIO(response.data))
         self.assertTrue(True)
 
-    def test_get_validate_so__json__not_jsonld__no_type(self):
+    def test__sovalid__get__json__not_jsonld__no_type(self):
         """
         SCENARIO:  We are given a GET request for a JSON-LD document that is 
         not SO JSON-LDv.  No type is given.
@@ -423,7 +423,7 @@ class TestDevelopersController(WillItSyncTestCase):
         actual = json.load(io.BytesIO(response.data))
         self.assertEqual(actual['metadata'], j)
 
-    def test_get_validate_so__html__no_type(self):
+    def test__sovalid__get__html__no_type(self):
         """
         SCENARIO:  We are given a GET request for a schema.org landing page
         that has valid JSON-LD.  No type argument is given.
@@ -459,6 +459,39 @@ class TestDevelopersController(WillItSyncTestCase):
 
         json.load(io.BytesIO(response.data))
         self.assertTrue(True)
+
+    def test__sovalid__get__xml__no_type(self):
+        """
+        SCENARIO:  We are given a GET request for an XML document.  
+        No type argument is given.
+
+        EXPECTED RESULT:  A 400 status code.
+        """
+        data = ir.read_binary('openapi_server.test.data.arm',
+                              'nsaqcrad1longC2.c2.xml')
+        self.setup_requests_patcher(200, data)
+
+        url = (
+            'https://www.archive.arm.gov'
+            '/metadata/adc/html/nsanimfraod1michC2.c1.html'
+        )
+        query_string = [('url', url)]
+        headers = {
+            'Accept': 'application/json',
+        }
+
+        with aioresponses() as m:
+            response_headers = {'Content-type': 'text/html'}
+            m.get(url, body=data, headers=response_headers, status=200)
+
+            response = self.client.open(
+                '/willitsync/1.1.1/sovalid',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+        self.assert400(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
 
     def test_post__sovalid__json(self):
         """
@@ -500,7 +533,7 @@ class TestDevelopersController(WillItSyncTestCase):
         actual = json.load(io.BytesIO(response.data))
         self.assertEqual(actual['metadata'], payload['metadata'])
 
-    def test_post__sovalid__html(self):
+    def test__sovalid__post__html(self):
         """
         SCENARIO:  We are given a POST request for a valid schema.org landing
         page..
@@ -536,10 +569,11 @@ class TestDevelopersController(WillItSyncTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
-        actual = json.load(io.BytesIO(response.data))
-        self.assertEqual(actual['metadata'], payload['metadata'])
+        # Verify that the response metadata is JSON.
+        json.load(io.BytesIO(response.data))
+        self.assertTrue(True)
 
-    def test_post__sovalid__xml(self):
+    def test__sovalid__post__xml(self):
         """
         SCENARIO:  We are given a POST request for an XML document.
         page..
@@ -620,7 +654,7 @@ class TestDevelopersController(WillItSyncTestCase):
         actual = json.load(io.BytesIO(response.data))
         self.assertEqual(actual['metadata'], payload['metadata'])
 
-    def test_post_validate__content_not_json__400(self):
+    def test__sovalid__post__content_not_json_or_html__400(self):
         """
         SCENARIO:  We are given a POST request with a body that is not JSON.
 
@@ -658,7 +692,7 @@ class TestDevelopersController(WillItSyncTestCase):
         actual = json.load(io.BytesIO(response.data))
         self.assertEqual(actual['metadata'], payload['metadata'])
 
-    def test_post_validate__invalid_so__400(self):
+    def test__sovalid__post__invalid_schemadotorg__400(self):
         """
         SCENARIO:  We are given a POST request for an invalid schema.org
         JSON-LD object.
@@ -697,7 +731,7 @@ class TestDevelopersController(WillItSyncTestCase):
         actual = json.load(io.BytesIO(response.data))
         self.assertEqual(actual['metadata'], payload['metadata'])
 
-    def test_post_validate__400__invalid_parameter(self):
+    def test__sovalid__post__invalid_parameter__400(self):
         """
         SCENARIO:  We are given a POST request for a valid schema.org JSON-LD
         object with an invalid type parameter.
