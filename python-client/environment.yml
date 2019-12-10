@@ -1,0 +1,30 @@
+name: willitsync
+channels:
+    - conda-forge
+    - defaults
+dependencies:
+    - aiohttp
+    - click
+    - click-log >= 0.3.2
+    - certifi >= 14.05.14
+    - iso8601
+    - lxml
+    - pip
+    - pyasn1
+    - pyshacl
+    - python==3.7.*
+    - python-graphviz
+    - pyxb
+    - rdflib
+    - rdflib-jsonld
+    - six >= 1.10
+    - python-dateutil >= 2.5.3
+    - setuptools >= 21.0.0
+    - urllib3 >= 1.15.1
+    - w3lib
+    - pip:
+        - dataone-cli==3.4.7
+        - dataone-common==3.4.7
+        - dataone-libclient==3.4.7
+        - dataone-scimeta==3.4.7
+        - extruct

@@ -1,3 +1,5 @@
 .DS_Store
 *.swp
 .idea
+docs/build
+python-flask/cover
