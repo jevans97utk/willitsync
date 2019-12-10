@@ -13,7 +13,6 @@ Welcome to willitsync's documentation!
    introduction
    python-client
    robots
-   get-so
    scivalid
    sovalid
    sitemap
