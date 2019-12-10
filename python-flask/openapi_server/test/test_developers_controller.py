@@ -315,6 +315,44 @@ class TestDevelopersController(WillItSyncTestCase):
         SOMetadata(*j)
         self.assertTrue(True)
 
+    def test__so(self):
+        """
+        SCENARIO:  We are given a GET request for a schema.org JSON-LD
+        landing page.
+
+        EXPECTED RESULT:  The schema.org metadata is returned in the body
+        of the response with a 200 status code.
+        """
+        data = ir.read_binary('openapi_server.test.data.arm',
+                              'nsanimfraod1michC2.c1.html')
+
+        url = (
+            'https://www.archive.arm.gov'
+            '/metadata/adc/json/nsanimfraod1michC2.c1.html'
+        )
+        query_string = [('url', url)]
+        headers = {
+            'Accept': 'application/json',
+        }
+
+        with aioresponses() as m:
+            response_headers = {
+                'Content-Type': 'text/html',
+            }
+            m.get(url, body=data, headers=response_headers, status=200)
+
+            response = self.client.open(
+                '/willitsync/1.1.1/so',
+                method='GET',
+                headers=headers,
+                query_string=query_string)
+
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+        json.load(io.BytesIO(response.data))
+        self.assertTrue(True)
+
     def test__sovalid__get__json__no_type(self):
         """
         SCENARIO:  We are given a GET request for a schema.org JSON-LD
