@@ -8,6 +8,7 @@ dependencies:
     - click-log >= 0.3.2
     - certifi >= 14.05.14
     - iso8601
+    - flask-testing
     - lxml
     - pip
     - pyasn1
