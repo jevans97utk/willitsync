@@ -11,7 +11,7 @@ from openapi_server import util
 def get_validate_metadata(url, formatid):  # noqa: E501
     """Retrieve and validate a science metadata XML document
 
-    Given a url referencing an XML metadata document, retrieve and validate the XML.  # noqa: E501
+    Given a URL referencing an XML metadata document, retrieve and validate the XML.  # noqa: E501
 
     :param url: URL referencing a science metadata XML document to retrieve  and validate. 
     :type url: str
@@ -26,7 +26,7 @@ def get_validate_metadata(url, formatid):  # noqa: E501
 def get_validate_so(url, sotype=None):  # noqa: E501
     """Retrieve and validate a schema.org JSON-LD document
 
-    Given a url referencing a schema.org JSON-LD document, verify that  the structure matches expected model indicated in the type parameter.  # noqa: E501
+    Given a URL referencing a schema.org JSON-LD document, verify that  the structure matches expected model indicated in the type parameter.  # noqa: E501
 
     :param url: URL referencing a schema.org JSON-LD document or a landing page containing schema.org JSON-LD to retrieve and validate. 
     :type url: str

@@ -51,7 +51,7 @@ class SitemapUrlset(Model):
     def url(self):
         """Gets the url of this SitemapUrlset.
 
-        The value of the url element of a loc entry in a sitemap.   # noqa: E501
+        The value of the URL element of a loc entry in a sitemap.   # noqa: E501
 
         :return: The url of this SitemapUrlset.
         :rtype: str
@@ -62,7 +62,7 @@ class SitemapUrlset(Model):
     def url(self, url):
         """Sets the url of this SitemapUrlset.
 
-        The value of the url element of a loc entry in a sitemap.   # noqa: E501
+        The value of the URL element of a loc entry in a sitemap.   # noqa: E501
 
         :param url: The url of this SitemapUrlset.
         :type url: str

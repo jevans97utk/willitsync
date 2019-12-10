@@ -61,7 +61,7 @@ paths:
   /scivalid:
     get:
       description: |
-        Given a url referencing an XML metadata document, retrieve and
+        Given a URL referencing an XML metadata document, retrieve and
         validate the XML.
       operationId: get_validate_metadata
       parameters:
@@ -105,7 +105,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SCIMetadata'
-          description: No XML document found at url
+          description: No XML document found at URL
       summary: Retrieve and validate a science metadata XML document
       tags:
       - developers
@@ -244,7 +244,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SOMetadata'
-          description: No landing page document found at url
+          description: No landing page document found at URL
       summary: Extract schema.org metadata from web page
       tags:
       - developers
@@ -252,7 +252,7 @@ paths:
       x-openapi-router-controller: openapi_server.controllers.developers_controller
   /sovalid:
     get:
-      description: "Given a url referencing a schema.org JSON-LD document, verify\
+      description: "Given a URL referencing a schema.org JSON-LD document, verify\
         \ that \nthe structure matches expected model indicated in the type parameter.\n"
       operationId: get_validate_so
       parameters:
@@ -297,7 +297,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SOMetadata'
-          description: No JSON-LD document found at url
+          description: No JSON-LD document found at URL
       summary: Retrieve and validate a schema.org JSON-LD document
       tags:
       - developers
@@ -561,7 +561,7 @@ components:
       properties:
         url:
           description: |
-            The value of the url element of a loc entry in a sitemap.
+            The value of the URL element of a loc entry in a sitemap.
           format: url
           type: string
         lastmod:

@@ -75,7 +75,7 @@ def scivalid(ctx, file, formatid):
 def get_so(ctx, url):
     msg = f"Calling parse_landing_page with url = {url}"
     logger.debug(msg)
-    result = ctx.obj['client'].parse_landing_page(url)
+    result = ctx.obj['client'].parse_landingpage(url)
     pprint(result)
 
 
