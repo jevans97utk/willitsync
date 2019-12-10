@@ -1,1 +1,2 @@
 click
+click-log >= 0.3.2
