@@ -2,7 +2,13 @@
 Validating an XML Metadata Document
 ===================================
 
-An XML document may be validated via either a ``GET`` operation if the document is available via a URL, or perhaps more conveniently with a ``POST`` operation if the document is available on a local filesystem.   Usage::
+An XML document may be validated via either a ``GET`` operation if the document is available via a URL, or perhaps more conveniently with a ``POST`` operation if the document is available on a local filesystem.
+
+*****
+Usage
+*****
+
+::
 
     $ willitsync get-scivalid --help
     Usage: willitsync get-scivalid [OPTIONS]
@@ -11,6 +17,10 @@ An XML document may be validated via either a ``GET`` operation if the document 
       -u, --url TEXT       Url to try  [required]
       -f, --formatid TEXT  ID for metadata standard
       --help               Show this message and exit.
+
+*******
+Example
+*******
 
 Suppose we try with a URL, but incorrectly use the landing page URL instead of the URL for the metadata document.  The response body
 will show the log messages at the INFO level::

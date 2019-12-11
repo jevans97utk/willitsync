@@ -14,6 +14,7 @@ Welcome to willitsync's documentation!
    python-client
    robots
    scivalid
+   so
    sovalid
    sitemap
    formats
