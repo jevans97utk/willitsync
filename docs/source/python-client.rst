@@ -17,7 +17,7 @@ You may create the necessary python environment with Anaconda::
 You may start the server as follows::
 
     cd python-flask
-    python3 -m openapi_server
+    python -m openapi_server
 
 To install the client tools with Anaconda, please execute the following
 from the ``python-client`` directory::
